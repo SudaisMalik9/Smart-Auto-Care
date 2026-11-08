@@ -1,4 +1,4 @@
-# Flutter and Dart
+﻿# Flutter / Dart
 .dart_tool/
 .packages
 .pub-cache/
@@ -14,17 +14,40 @@ android/key.properties
 *.jks
 *.keystore
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Django
+staticfiles/
+media/
+*.sqlite3
+db.sqlite3
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# SQL database backups - NEVER commit real backups
+database/backups/*
+!database/backups/.gitkeep
+*.dump
+*.backup
+
 # IDE
 .idea/
 .vscode/
 *.iml
 
-# Firebase configuration - review before committing
-.env
-.env.*
-!.env.example
-
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
