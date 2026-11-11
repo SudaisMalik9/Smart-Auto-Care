@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'vehicle_owner_dashboard.dart';
 import 'driver_dashboard.dart';
 import 'workshop_dashboard.dart';
@@ -49,22 +48,30 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_selectedRole == 'Vehicle Owner') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const VehicleOwnerDashboard()),
+        MaterialPageRoute(
+          builder: (context) => const VehicleOwnerDashboard(),
+        ),
       );
     } else if (_selectedRole == 'Driver') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DriverDashboard()),
+        MaterialPageRoute(
+          builder: (context) => const DriverDashboard(),
+        ),
       );
     } else if (_selectedRole == 'Workshop') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const WorkshopDashboard()),
+        MaterialPageRoute(
+          builder: (context) => const WorkshopDashboard(),
+        ),
       );
     } else if (_selectedRole == 'Administrator') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AdminDashboard()),
+        MaterialPageRoute(
+          builder: (context) => const AdminDashboard(),
+        ),
       );
     }
   }
@@ -87,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Text(
                 'Enter your email address to continue with '
-                'password recovery.',
+                    'password recovery.',
               ),
               const SizedBox(height: 16),
               TextField(
@@ -129,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SnackBar(
                     content: Text(
                       'Password recovery will be available '
-                      'after Firebase integration.',
+                          'after Firebase integration.',
                     ),
                   ),
                 );
@@ -162,6 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
 
                     // App branding
+
                     const Icon(
                       Icons.directions_car_filled_rounded,
                       size: 62,
@@ -185,7 +193,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Your car, our responsibility',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
                     ),
 
                     const SizedBox(height: 42),
@@ -205,12 +216,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Log in to manage your vehicle and services.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
                     ),
 
                     const SizedBox(height: 28),
 
                     // ROLE SELECTION
+
                     const Text(
                       'Login as',
                       style: TextStyle(
@@ -225,7 +240,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       value: _selectedRole,
                       isExpanded: true,
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.person_outline_rounded),
+                        prefixIcon: const Icon(
+                          Icons.person_outline_rounded,
+                        ),
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -256,6 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
 
                     // EMAIL FIELD
+
                     const Text(
                       'Email Address',
                       style: TextStyle(
@@ -271,7 +289,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Enter your email address',
-                        prefixIcon: const Icon(Icons.email_outlined),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                        ),
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -291,8 +311,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           return 'Please enter your email address.';
                         }
 
-                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                            .hasMatch(email)) {
+                        if (!RegExp(
+                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                        ).hasMatch(email)) {
                           return 'Please enter a valid email address.';
                         }
 
@@ -303,6 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
 
                     // PASSWORD FIELD
+
                     const Text(
                       'Password',
                       style: TextStyle(
@@ -318,7 +340,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline_rounded,
+                        ),
                         suffixIcon: IconButton(
                           tooltip: _obscurePassword
                               ? 'Show password'
@@ -360,6 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
 
                     // FORGOT PASSWORD
+
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -371,6 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
 
                     // LOGIN BUTTON
+
                     SizedBox(
                       height: 54,
                       child: ElevatedButton(
@@ -396,13 +422,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 22),
 
                     // CREATE ACCOUNT
+
                     Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Text(
                           "Don't have an account? ",
-                          style: TextStyle(color: Colors.black87),
+                          style: TextStyle(
+                            color: Colors.black87,
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
@@ -410,7 +439,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    const RegistrationScreen(),
+                                const RegistrationScreen(),
                               ),
                             );
                           },
@@ -424,7 +453,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Secure vehicle care, all in one place.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 12,
+                      ),
                     ),
 
                     const SizedBox(height: 20),
@@ -447,7 +479,8 @@ class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<RegistrationScreen> createState() =>
+      _RegistrationScreenState();
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
@@ -461,7 +494,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _obscurePassword = true;
   String _selectedRole = 'Vehicle Owner';
 
-  final List<String> _roles = ['Vehicle Owner', 'Driver', 'Workshop'];
+  final List<String> _roles = [
+    'Vehicle Owner',
+    'Driver',
+    'Workshop',
+  ];
 
   @override
   void dispose() {
@@ -483,7 +520,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       const SnackBar(
         content: Text(
           'Registration form validated. Account creation '
-          'will be enabled after Firebase integration.',
+              'will be enabled after Firebase integration.',
         ),
         backgroundColor: primaryBlue,
         duration: Duration(seconds: 4),
@@ -500,7 +537,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
-        title: const Text('Create Account', style: TextStyle(color: navyColor)),
+        title: const Text(
+          'Create Account',
+          style: TextStyle(color: navyColor),
+        ),
         iconTheme: const IconThemeData(color: navyColor),
       ),
       body: SafeArea(
@@ -531,18 +571,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const Text(
                       'Create your account to get started.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                      ),
                     ),
 
                     const SizedBox(height: 30),
 
                     // ROLE SELECTION
+
                     DropdownButtonFormField<String>(
                       value: _selectedRole,
                       isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Register as',
-                        prefixIcon: Icon(Icons.person_outline_rounded),
+                        prefixIcon: Icon(
+                          Icons.person_outline_rounded,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                       items: _roles.map((role) {
@@ -563,16 +608,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 16),
 
                     // FULL NAME
+
                     TextFormField(
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
                         labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.badge_outlined),
+                        prefixIcon: Icon(
+                          Icons.badge_outlined,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.trim().length < 2) {
+                        if (value == null ||
+                            value.trim().length < 2) {
                           return 'Please enter your full name.';
                         }
 
@@ -583,19 +632,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 16),
 
                     // EMAIL
+
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Email Address',
-                        prefixIcon: Icon(Icons.email_outlined),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         final email = value?.trim() ?? '';
 
-                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                            .hasMatch(email)) {
+                        if (!RegExp(
+                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                        ).hasMatch(email)) {
                           return 'Please enter a valid email address.';
                         }
 
@@ -606,13 +659,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 16),
 
                     // PHONE NUMBER
+
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       decoration: const InputDecoration(
                         labelText: 'Phone Number',
                         hintText: 'e.g. 03XXXXXXXXX',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                        prefixIcon: Icon(
+                          Icons.phone_outlined,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -629,12 +685,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 16),
 
                     // PASSWORD
+
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline_rounded,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -661,6 +720,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 24),
 
                     // CREATE ACCOUNT BUTTON
+
                     SizedBox(
                       height: 54,
                       child: ElevatedButton(
@@ -688,7 +748,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('Already have an account? Login'),
+                      child: const Text(
+                        'Already have an account? Login',
+                      ),
                     ),
                   ],
                 ),

@@ -15,6 +15,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
   int selectedIndex = 0;
   String userFilter = 'All';
   String bookingFilter = 'All';
+  String userSearch = '';
+  String adminName = 'System Administrator';
+  String adminEmail = 'admin@smartautocare.com';
+  bool bookingNotifications = true;
+  bool securityNotifications = true;
+  bool systemNotifications = true;
+  String selectedLanguage = 'English';
 
   final List<Map<String, dynamic>> users = [
     {
@@ -137,7 +144,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     },
   ];
 
-  int get activeUsers => users.where((u) => u['status'] == 'Active').length;
+  int get activeUsers =>
+      users.where((u) => u['status'] == 'Active').length;
 
   int get verifiedWorkshops =>
       workshops.where((w) => w['status'] == 'Verified').length;
@@ -149,25 +157,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
       bookings.where((b) => b['status'] == 'Completed').length;
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void updateUserStatus(Map<String, dynamic> user) {
     setState(() {
-      user['status'] = user['status'] == 'Active' ? 'Inactive' : 'Active';
+      user['status'] =
+      user['status'] == 'Active' ? 'Inactive' : 'Active';
     });
     showMessage('${user['name']} status updated.');
   }
 
-  void updateWorkshopStatus(Map<String, dynamic> workshop, String status) {
+  void updateWorkshopStatus(
+      Map<String, dynamic> workshop,
+      String status,
+      ) {
     setState(() {
       workshop['status'] = status;
     });
     showMessage('${workshop['name']} is now $status.');
   }
 
-  void updateBookingStatus(Map<String, dynamic> booking, String status) {
+  void updateBookingStatus(
+      Map<String, dynamic> booking,
+      String status,
+      ) {
     setState(() {
       booking['status'] = status;
     });
@@ -324,7 +340,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
           const ListTile(
             leading: CircleAvatar(
               backgroundColor: Colors.white24,
-              child: Icon(Icons.admin_panel_settings, color: Colors.white),
+              child: Icon(Icons.admin_panel_settings,
+                  color: Colors.white),
             ),
             title: Text(
               'Administrator',
@@ -379,8 +396,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
           IconButton(
-            onPressed: () => showMessage('No new notifications.'),
-            icon: const Icon(Icons.notifications_none, color: adminNavy),
+            onPressed: showAdminNotifications,
+            icon: const Icon(
+              Icons.notifications_none,
+              color: adminNavy,
+            ),
           ),
           const CircleAvatar(
             backgroundColor: Color(0xFFEAF3FF),
@@ -414,61 +434,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
           const SizedBox(height: 25),
 
           GridView.count(
-            crossAxisCount: MediaQuery.of(context).size.width > 900 ? 4 : 2,
+            crossAxisCount:
+            MediaQuery.of(context).size.width > 900 ? 4 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
             childAspectRatio: 1.5,
             children: [
-              statCard(
-                'Total Users',
-                '${users.length}',
-                Icons.people_outline,
-                adminBlue,
-              ),
-              statCard(
-                'Active Users',
-                '$activeUsers',
-                Icons.verified_user_outlined,
-                Colors.green,
-              ),
-              statCard(
-                'Workshops',
-                '${workshops.length}',
-                Icons.store_outlined,
-                Colors.deepPurple,
-              ),
-              statCard(
-                'Vehicles',
-                '${vehicles.length}',
-                Icons.directions_car_outlined,
-                Colors.orange,
-              ),
-              statCard(
-                'Total Bookings',
-                '${bookings.length}',
-                Icons.calendar_month,
-                adminBlue,
-              ),
-              statCard(
-                'Pending Workshops',
-                '$pendingWorkshops',
-                Icons.pending_actions,
-                Colors.orange,
-              ),
-              statCard(
-                'Verified Workshops',
-                '$verifiedWorkshops',
-                Icons.verified,
-                Colors.green,
-              ),
-              statCard(
-                'Completed Services',
-                '$completedBookings',
-                Icons.check_circle_outline,
-                Colors.teal,
-              ),
+              statCard('Total Users', '${users.length}',
+                  Icons.people_outline, adminBlue),
+              statCard('Active Users', '$activeUsers',
+                  Icons.verified_user_outlined, Colors.green),
+              statCard('Workshops', '${workshops.length}',
+                  Icons.store_outlined, Colors.deepPurple),
+              statCard('Vehicles', '${vehicles.length}',
+                  Icons.directions_car_outlined, Colors.orange),
+              statCard('Total Bookings', '${bookings.length}',
+                  Icons.calendar_month, adminBlue),
+              statCard('Pending Workshops', '$pendingWorkshops',
+                  Icons.pending_actions, Colors.orange),
+              statCard('Verified Workshops', '$verifiedWorkshops',
+                  Icons.verified, Colors.green),
+              statCard('Completed Services', '$completedBookings',
+                  Icons.check_circle_outline, Colors.teal),
             ],
           ),
 
@@ -481,7 +470,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
           const SizedBox(height: 25),
 
-          const Text('Workshop Verification Requests', style: headingStyle),
+          const Text('Workshop Verification Requests',
+              style: headingStyle),
           const SizedBox(height: 14),
 
           ...workshops
@@ -494,7 +484,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   // STAT CARD
 
-  Widget statCard(String title, String value, IconData icon, Color color) {
+  Widget statCard(
+      String title,
+      String value,
+      IconData icon,
+      Color color,
+      ) {
     return card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,7 +507,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.blueGrey,
+            ),
           ),
         ],
       ),
@@ -523,7 +521,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget buildUsersPage() {
     final filtered = users.where((user) {
-      return userFilter == 'All' || user['role'] == userFilter;
+      final matchesRole = userFilter == 'All' || user['role'] == userFilter;
+      final query = userSearch.trim().toLowerCase();
+      final matchesSearch = query.isEmpty ||
+          user['name'].toString().toLowerCase().contains(query) ||
+          user['email'].toString().toLowerCase().contains(query) ||
+          user['phone'].toString().toLowerCase().contains(query);
+      return matchesRole && matchesSearch;
     }).toList();
 
     return pageLayout(
@@ -536,14 +540,35 @@ class _AdminDashboardState extends State<AdminDashboard> {
             'View and manage registered platform accounts.',
             style: TextStyle(color: Colors.blueGrey),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search by name, email or phone',
+                prefixIcon: const Icon(Icons.search),
+                filled: true, fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+              onChanged: (value) => setState(() => userSearch = value),
+            )),
+            const SizedBox(width: 10),
+            IconButton.filled(
+              tooltip: 'Add user',
+              onPressed: showAddUserDialog,
+              icon: const Icon(Icons.person_add_alt_1),
+            ),
+          ]),
+          const SizedBox(height: 16),
 
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ['All', 'Vehicle Owner', 'Driver', 'Workshop'].map((
-              filter,
-            ) {
+            children: [
+              'All',
+              'Vehicle Owner',
+              'Driver',
+              'Workshop',
+            ].map((filter) {
               return ChoiceChip(
                 label: Text(filter),
                 selected: userFilter == filter,
@@ -587,11 +612,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 const SizedBox(height: 4),
                 Text(
                   user['email'],
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                  ),
                 ),
                 Text(
                   '${user['role']} • ${user['phone']}',
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 statusBadge(user['status']),
@@ -607,7 +638,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
               }
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(value: 'details', child: Text('View Details')),
+              PopupMenuItem(
+                value: 'details',
+                child: Text('View Details'),
+              ),
               PopupMenuItem(
                 value: 'toggle',
                 child: Text('Change Account Status'),
@@ -692,12 +726,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
           const SizedBox(height: 13),
-          detailRow(
-            Icons.location_on_outlined,
-            'Location',
-            workshop['location'],
-          ),
-          detailRow(Icons.phone_outlined, 'Contact', workshop['phone']),
+          detailRow(Icons.location_on_outlined,
+              'Location', workshop['location']),
+          detailRow(Icons.phone_outlined,
+              'Contact', workshop['phone']),
           const SizedBox(height: 12),
 
           if (workshop['status'] == 'Pending')
@@ -705,7 +737,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => updateWorkshopStatus(workshop, 'Rejected'),
+                    onPressed: () => updateWorkshopStatus(
+                      workshop,
+                      'Rejected',
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                     ),
@@ -715,7 +750,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => updateWorkshopStatus(workshop, 'Verified'),
+                    onPressed: () => updateWorkshopStatus(
+                      workshop,
+                      'Verified',
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: adminBlue,
                       foregroundColor: Colors.white,
@@ -734,7 +772,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget buildBookingsPage() {
     final filtered = bookings.where((booking) {
-      return bookingFilter == 'All' || booking['status'] == bookingFilter;
+      return bookingFilter == 'All' ||
+          booking['status'] == bookingFilter;
     }).toList();
 
     return pageLayout(
@@ -747,23 +786,45 @@ class _AdminDashboardState extends State<AdminDashboard> {
             'Monitor service bookings across the platform.',
             style: TextStyle(color: Colors.blueGrey),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search by name, email or phone',
+                prefixIcon: const Icon(Icons.search),
+                filled: true, fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+              onChanged: (value) => setState(() => userSearch = value),
+            )),
+            const SizedBox(width: 10),
+            IconButton.filled(
+              tooltip: 'Add user',
+              onPressed: showAddUserDialog,
+              icon: const Icon(Icons.person_add_alt_1),
+            ),
+          ]),
+          const SizedBox(height: 16),
 
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ['All', 'Pending', 'Accepted', 'In Progress', 'Completed']
-                .map((filter) {
-                  return ChoiceChip(
-                    label: Text(filter),
-                    selected: bookingFilter == filter,
-                    selectedColor: const Color(0xFFDCEBFF),
-                    onSelected: (_) {
-                      setState(() => bookingFilter = filter);
-                    },
-                  );
-                })
-                .toList(),
+            children: [
+              'All',
+              'Pending',
+              'Accepted',
+              'In Progress',
+              'Completed',
+            ].map((filter) {
+              return ChoiceChip(
+                label: Text(filter),
+                selected: bookingFilter == filter,
+                selectedColor: const Color(0xFFDCEBFF),
+                onSelected: (_) {
+                  setState(() => bookingFilter = filter);
+                },
+              );
+            }).toList(),
           ),
 
           const SizedBox(height: 18),
@@ -797,10 +858,72 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
           const Divider(height: 23),
-          detailRow(Icons.person_outline, 'Customer', booking['customer']),
-          detailRow(Icons.store_outlined, 'Workshop', booking['workshop']),
-          detailRow(Icons.directions_car, 'Vehicle', booking['vehicle']),
-          detailRow(Icons.calendar_today, 'Date', booking['date']),
+          detailRow(Icons.person_outline,
+              'Customer', booking['customer']),
+          detailRow(Icons.store_outlined,
+              'Workshop', booking['workshop']),
+          detailRow(Icons.directions_car,
+              'Vehicle', booking['vehicle']),
+          detailRow(Icons.calendar_today,
+              'Date', booking['date']),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              spacing: 8,
+              children: [
+                TextButton.icon(
+                  onPressed: () => showBookingDetails(booking),
+                  icon: const Icon(Icons.visibility_outlined, size: 17),
+                  label: const Text('Details'),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Update booking status',
+                  onSelected: (status) => updateBookingStatus(booking, status),
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(value: 'Pending', child: Text('Mark Pending')),
+                    PopupMenuItem(value: 'Accepted', child: Text('Mark Accepted')),
+                    PopupMenuItem(value: 'In Progress', child: Text('Mark In Progress')),
+                    PopupMenuItem(value: 'Completed', child: Text('Mark Completed')),
+                    PopupMenuItem(value: 'Cancelled', child: Text('Mark Cancelled')),
+                  ],
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.edit_outlined, size: 17, color: adminBlue),
+                      SizedBox(width: 5),
+                      Text('Update status', style: TextStyle(color: adminBlue)),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showBookingDetails(Map<String, dynamic> booking) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Booking Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Service: ${booking['service']}'),
+            Text('Customer: ${booking['customer']}'),
+            Text('Workshop: ${booking['workshop']}'),
+            Text('Vehicle: ${booking['vehicle']}'),
+            Text('Date: ${booking['date']}'),
+            const SizedBox(height: 8),
+            Row(children: [const Text('Status: '), statusBadge(booking['status'])]),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
         ],
       ),
     );
@@ -822,55 +945,82 @@ class _AdminDashboardState extends State<AdminDashboard> {
           const SizedBox(height: 20),
 
           ...vehicles.map((vehicle) {
-            return card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: Color(0xFFEAF3FF),
-                    child: Icon(Icons.directions_car, color: adminBlue),
+            return InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => showVehicleDetails(vehicle),
+                child: card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: Color(0xFFEAF3FF),
+                        child: Icon(
+                          Icons.directions_car,
+                          color: adminBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              vehicle['name']!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: adminNavy,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Registration: ${vehicle['registration']}',
+                              style: const TextStyle(
+                                color: Colors.blueGrey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              'Owner: ${vehicle['owner']}',
+                              style: const TextStyle(
+                                color: Colors.blueGrey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              'Model year: ${vehicle['year']}',
+                              style: const TextStyle(
+                                color: Colors.blueGrey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          vehicle['name']!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: adminNavy,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Registration: ${vehicle['registration']}',
-                          style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          'Owner: ${vehicle['owner']}',
-                          style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          'Model year: ${vehicle['year']}',
-                          style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
+                ));
           }),
+        ],
+      ),
+    );
+  }
+
+  void showVehicleDetails(Map<String, String> vehicle) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(vehicle['name'] ?? 'Vehicle Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Owner: ${vehicle['owner']}'),
+            Text('Registration: ${vehicle['registration']}'),
+            Text('Model year: ${vehicle['year']}'),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
         ],
       ),
     );
@@ -881,10 +1031,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget buildReportsPage() {
     final total = bookings.length;
     final completed = completedBookings;
-    final pending = bookings.where((b) => b['status'] == 'Pending').length;
-    final inProgress = bookings
-        .where((b) => b['status'] == 'In Progress')
-        .length;
+    final pending = bookings.where(
+          (b) => b['status'] == 'Pending',
+    ).length;
+    final inProgress = bookings.where(
+          (b) => b['status'] == 'In Progress',
+    ).length;
 
     return pageLayout(
       child: Column(
@@ -914,7 +1066,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 reportBar('Completed', completed, total, Colors.green),
                 reportBar('Pending', pending, total, Colors.orange),
                 reportBar('In Progress', inProgress, total, Colors.deepPurple),
-                reportBar('Accepted', acceptedCount, total, adminBlue),
+                reportBar(
+                  'Accepted',
+                  acceptedCount,
+                  total,
+                  adminBlue,
+                ),
               ],
             ),
           ),
@@ -922,31 +1079,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
           const SizedBox(height: 18),
 
           GridView.count(
-            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 3 : 2,
+            crossAxisCount:
+            MediaQuery.of(context).size.width > 650 ? 3 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 1.5,
             children: [
-              statCard(
-                'Registered Users',
-                '${users.length}',
-                Icons.people,
-                adminBlue,
-              ),
-              statCard(
-                'Registered Vehicles',
-                '${vehicles.length}',
-                Icons.directions_car,
-                Colors.orange,
-              ),
-              statCard(
-                'Workshops',
-                '${workshops.length}',
-                Icons.store,
-                Colors.deepPurple,
-              ),
+              statCard('Registered Users', '${users.length}',
+                  Icons.people, adminBlue),
+              statCard('Registered Vehicles', '${vehicles.length}',
+                  Icons.directions_car, Colors.orange),
+              statCard('Workshops', '${workshops.length}',
+                  Icons.store, Colors.deepPurple),
             ],
           ),
 
@@ -955,8 +1101,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () =>
-                  showMessage('Report export will be implemented later.'),
+              onPressed: showReportPreview,
               icon: const Icon(Icons.download_outlined),
               label: const Text('Export Report'),
             ),
@@ -969,7 +1114,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
   int get acceptedCount =>
       bookings.where((b) => b['status'] == 'Accepted').length;
 
-  Widget reportBar(String label, int value, int total, Color color) {
+  Widget reportBar(
+      String label,
+      int value,
+      int total,
+      Color color,
+      ) {
     final progress = total == 0 ? 0.0 : value / total;
 
     return Padding(
@@ -1018,9 +1168,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
           const SizedBox(height: 22),
 
           card(
-            child: const Column(
+            child: Column(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 38,
                   backgroundColor: Color(0xFFEAF3FF),
                   child: Icon(
@@ -1031,7 +1181,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'System Administrator',
+                  adminName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -1039,7 +1189,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ),
                 Text(
-                  'admin@smartautocare.com',
+                  adminEmail,
                   style: TextStyle(color: Colors.blueGrey),
                 ),
               ],
@@ -1048,19 +1198,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
           const SizedBox(height: 20),
 
-          settingTile(Icons.person_outline, 'Administrator Profile'),
-          settingTile(Icons.security_outlined, 'Security & Password'),
-          settingTile(Icons.notifications_outlined, 'Notification Settings'),
-          settingTile(Icons.language_outlined, 'Language Settings'),
-          settingTile(Icons.info_outline, 'About Smart Auto Care'),
-          settingTile(Icons.help_outline, 'Help & Support'),
-          settingTile(Icons.logout, 'Log Out'),
+          settingTile(Icons.person_outline,
+              'Administrator Profile', editAdminProfile),
+          settingTile(Icons.security_outlined,
+              'Security & Password', showSecuritySettings),
+          settingTile(Icons.notifications_outlined,
+              'Notification Settings', showNotificationSettings),
+          settingTile(Icons.language_outlined,
+              'Language Settings', showLanguageSettings),
+          settingTile(Icons.info_outline,
+              'About Smart Auto Care', showAbout),
+          settingTile(Icons.help_outline,
+              'Help & Support', showHelp),
+          settingTile(Icons.logout,
+              'Log Out', confirmLogout),
         ],
       ),
     );
   }
 
-  Widget settingTile(IconData icon, String title) {
+  Widget settingTile(IconData icon, String title, VoidCallback onTap) {
     return card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
@@ -1068,7 +1225,290 @@ class _AdminDashboardState extends State<AdminDashboard> {
         leading: Icon(icon, color: adminBlue),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => showMessage('$title will be implemented later.'),
+        onTap: onTap,
+      ),
+    );
+  }
+
+
+  // ADMIN ACTIONS
+
+  void showAddUserDialog() {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final phoneController = TextEditingController();
+    String role = 'Vehicle Owner';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, dialogSetState) => AlertDialog(
+          title: const Text('Add Platform User'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Full name')),
+                TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email address')),
+                TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone number')),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: role,
+                  decoration: const InputDecoration(labelText: 'User role'),
+                  items: const [
+                    DropdownMenuItem(value: 'Vehicle Owner', child: Text('Vehicle Owner')),
+                    DropdownMenuItem(value: 'Driver', child: Text('Driver')),
+                    DropdownMenuItem(value: 'Workshop', child: Text('Workshop')),
+                  ],
+                  onChanged: (value) => dialogSetState(() => role = value ?? role),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                final name = nameController.text.trim();
+                final email = emailController.text.trim();
+                final phone = phoneController.text.trim();
+                if (name.isEmpty || email.isEmpty || phone.isEmpty || !email.contains('@')) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter a name, valid email and phone number.')),
+                  );
+                  return;
+                }
+                setState(() {
+                  users.add({
+                    'name': name,
+                    'email': email,
+                    'role': role,
+                    'phone': phone,
+                    'status': 'Active',
+                  });
+                });
+                Navigator.pop(dialogContext);
+                showMessage('$name added as $role.');
+              },
+              child: const Text('Add User'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void editAdminProfile() {
+    final nameController = TextEditingController(text: adminName);
+    final emailController = TextEditingController(text: adminEmail);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Administrator Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Display name')),
+            TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email address')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.trim().isEmpty || !emailController.text.trim().contains('@')) {
+                showMessage('Enter a name and valid email address.');
+                return;
+              }
+              setState(() {
+                adminName = nameController.text.trim();
+                adminEmail = emailController.text.trim();
+              });
+              Navigator.pop(dialogContext);
+              showMessage('Administrator profile updated.');
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showSecuritySettings() {
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Security & Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: currentController, obscureText: true, decoration: const InputDecoration(labelText: 'Current password')),
+            TextField(controller: newController, obscureText: true, decoration: const InputDecoration(labelText: 'New password')),
+            const SizedBox(height: 8),
+            const Text('Demo interface only. Password changes require authentication backend integration.', style: TextStyle(color: Colors.blueGrey, fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              showMessage('Password update requires Firebase Authentication integration.');
+            },
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showNotificationSettings() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, dialogSetState) => AlertDialog(
+          title: const Text('Notification Settings'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(title: const Text('Booking updates'), value: bookingNotifications, onChanged: (v) { dialogSetState(() => bookingNotifications = v); setState(() {}); }),
+              SwitchListTile(title: const Text('Security alerts'), value: securityNotifications, onChanged: (v) { dialogSetState(() => securityNotifications = v); setState(() {}); }),
+              SwitchListTile(title: const Text('System announcements'), value: systemNotifications, onChanged: (v) { dialogSetState(() => systemNotifications = v); setState(() {}); }),
+            ],
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Done'))],
+        ),
+      ),
+    );
+  }
+
+  void showLanguageSettings() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, dialogSetState) => AlertDialog(
+          title: const Text('Language Settings'),
+          content: DropdownButtonFormField<String>(
+            value: selectedLanguage,
+            items: const [
+              DropdownMenuItem(value: 'English', child: Text('English')),
+              DropdownMenuItem(value: 'اردو', child: Text('اردو')),
+            ],
+            onChanged: (value) => dialogSetState(() => selectedLanguage = value ?? selectedLanguage),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+            ElevatedButton(onPressed: () { Navigator.pop(dialogContext); showMessage('Language preference set to $selectedLanguage. Full localization requires app-wide translation support.'); }, child: const Text('Save')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void showAbout() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('About Smart Auto Care'),
+        content: const Text('Smart Auto Care is a vehicle maintenance platform connecting vehicle owners, assigned drivers and workshops. This administrator area provides platform oversight and management tools.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void showHelp() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Administrator Help'),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('User Management', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Search accounts, add demo users, view details and activate or deactivate accounts.'),
+              SizedBox(height: 10),
+              Text('Workshop Management', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Review pending workshop registrations and verify or reject them.'),
+              SizedBox(height: 10),
+              Text('Booking Management', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Filter bookings, review details and update their administrative status.'),
+              SizedBox(height: 10),
+              Text('Reports', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Review booking counts and platform registration summaries.'),
+            ],
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void showAdminNotifications() {
+    final notices = <String>[
+      if (pendingWorkshops > 0) '$pendingWorkshops workshop verification request(s) are pending.',
+      if (bookings.any((b) => b['status'] == 'Pending')) '${bookings.where((b) => b['status'] == 'Pending').length} booking(s) need review.',
+      if (users.any((u) => u['status'] == 'Inactive')) '${users.where((u) => u['status'] == 'Inactive').length} user account(s) are inactive.',
+    ];
+    if (!bookingNotifications) notices.removeWhere((n) => n.contains('booking'));
+    if (!systemNotifications) notices.removeWhere((n) => n.contains('workshop'));
+    if (!securityNotifications) notices.removeWhere((n) => n.contains('inactive'));
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Administrator Notifications'),
+        content: notices.isEmpty
+            ? const Text('No new notifications.')
+            : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: notices.map((n) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Text('• $n'))).toList()),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void showReportPreview() {
+    final rows = [
+      'Total users: ${users.length}',
+      'Active users: $activeUsers',
+      'Total workshops: ${workshops.length}',
+      'Verified workshops: $verifiedWorkshops',
+      'Pending workshops: $pendingWorkshops',
+      'Total vehicles: ${vehicles.length}',
+      'Total bookings: ${bookings.length}',
+      'Completed bookings: $completedBookings',
+      'Accepted bookings: $acceptedCount',
+      'Pending bookings: ${bookings.where((b) => b['status'] == 'Pending').length}',
+      'In-progress bookings: ${bookings.where((b) => b['status'] == 'In Progress').length}',
+    ];
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Platform Report Preview'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: rows.map((row) => Padding(padding: const EdgeInsets.only(bottom: 7), child: Text(row))).toList()),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out of the administrator account?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            child: const Text('Log Out'),
+          ),
+        ],
       ),
     );
   }
@@ -1087,7 +1527,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget card({required Widget child, EdgeInsetsGeometry? margin}) {
+  Widget card({
+    required Widget child,
+    EdgeInsetsGeometry? margin,
+  }) {
     return Container(
       width: double.infinity,
       margin: margin,
@@ -1101,7 +1544,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget detailRow(IconData icon, String label, String value) {
+  Widget detailRow(
+      IconData icon,
+      String label,
+      String value,
+      ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1112,7 +1559,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             width: 90,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.blueGrey,
+              ),
             ),
           ),
           Expanded(
@@ -1141,6 +1591,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         break;
       case 'Inactive':
       case 'Rejected':
+      case 'Cancelled':
         color = Colors.red;
         break;
       case 'Pending':
@@ -1154,7 +1605,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.10),
         borderRadius: BorderRadius.circular(20),

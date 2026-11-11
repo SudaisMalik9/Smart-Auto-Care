@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class BookServiceScreen extends StatefulWidget {
@@ -28,13 +29,22 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   DateTime? _selectedDate;
 
   final List<Map<String, String>> _workshops = [
-    {'name': 'AutoCare Premium Workshop', 'location': 'Saddar, Rawalpindi'},
+    {
+      'name': 'AutoCare Premium Workshop',
+      'location': 'Saddar, Rawalpindi',
+    },
     {
       'name': 'Elite Motors Service Centre',
       'location': 'Commercial Market, Rawalpindi',
     },
-    {'name': 'QuickFix Auto Workshop', 'location': 'Bahria Town, Rawalpindi'},
-    {'name': 'City Motors Garage', 'location': 'Chaklala, Rawalpindi'},
+    {
+      'name': 'QuickFix Auto Workshop',
+      'location': 'Bahria Town, Rawalpindi',
+    },
+    {
+      'name': 'City Motors Garage',
+      'location': 'Chaklala, Rawalpindi',
+    },
   ];
 
   final List<String> _vehicles = [
@@ -83,7 +93,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   void _onWorkshopChanged(String? value) {
     if (value == null) return;
 
-    final workshop = _workshops.firstWhere((item) => item['name'] == value);
+    final workshop = _workshops.firstWhere(
+          (item) => item['name'] == value,
+    );
 
     setState(() {
       _selectedWorkshop = value;
@@ -126,7 +138,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       'vehicle': _selectedVehicle,
       'service': _selectedService,
       'date':
-          '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+      '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
       'time': _selectedTime,
       'remarks': _remarksController.text.trim(),
       'status': 'Pending',
@@ -150,7 +162,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               const SizedBox(height: 15),
               const Text(
                 'Booking Submitted!',
-                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
               const Text(
@@ -160,8 +175,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               const SizedBox(height: 18),
               Text(
                 '${booking['workshop']}\n'
-                '${booking['service']}\n'
-                '${booking['date']} at ${booking['time']}',
+                    '${booking['service']}\n'
+                    '${booking['date']} at ${booking['time']}',
                 textAlign: TextAlign.center,
               ),
             ],
@@ -229,8 +244,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       );
                     }).toList(),
                     onChanged: _onWorkshopChanged,
-                    validator: (value) =>
-                        value == null ? 'Please select a workshop' : null,
+                    validator: (value) => value == null
+                        ? 'Please select a workshop'
+                        : null,
                   ),
 
                   const SizedBox(height: 22),
@@ -254,7 +270,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       setState(() => _selectedVehicle = value);
                     },
                     validator: (value) =>
-                        value == null ? 'Please select a vehicle' : null,
+                    value == null ? 'Please select a vehicle' : null,
                   ),
 
                   const SizedBox(height: 22),
@@ -278,7 +294,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                       setState(() => _selectedService = value);
                     },
                     validator: (value) =>
-                        value == null ? 'Please select a service' : null,
+                    value == null ? 'Please select a service' : null,
                   ),
 
                   const SizedBox(height: 22),
@@ -296,8 +312,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         _selectedDate == null
                             ? 'Choose a date'
                             : '${_selectedDate!.day}/'
-                                  '${_selectedDate!.month}/'
-                                  '${_selectedDate!.year}',
+                            '${_selectedDate!.month}/'
+                            '${_selectedDate!.year}',
                         style: TextStyle(
                           color: _selectedDate == null
                               ? Colors.grey
@@ -403,7 +419,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               children: [
                 const Text(
                   'Selected Workshop',
-                  style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -419,7 +438,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                   _selectedWorkshop == null
                       ? 'Please choose a workshop below'
                       : _selectedWorkshopLocation,
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -446,7 +468,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       prefixIcon: Icon(icon, color: const Color(0xFF1565C0)),
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 15,
+        vertical: 16,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
         borderSide: const BorderSide(color: Color(0xFFE5EAF0)),
@@ -457,7 +482,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
-        borderSide: const BorderSide(color: Color(0xFF1565C0), width: 1.5),
+        borderSide: const BorderSide(
+          color: Color(0xFF1565C0),
+          width: 1.5,
+        ),
       ),
     );
   }

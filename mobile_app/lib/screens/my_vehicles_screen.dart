@@ -110,10 +110,14 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 _notifyChanges();
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vehicle removed.')),
+                  const SnackBar(
+                    content: Text('Vehicle removed.'),
+                  ),
                 );
               },
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
               child: const Text('Remove'),
             ),
           ],
@@ -158,7 +162,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 ),
                 const SizedBox(height: 18),
                 ...details.map(
-                  (detail) => Padding(
+                      (detail) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     child: Row(
                       children: [
@@ -201,7 +205,10 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
         iconTheme: const IconThemeData(color: myVehiclesNavy),
         title: const Text(
           'My Vehicles',
-          style: TextStyle(color: myVehiclesNavy, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: myVehiclesNavy,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
@@ -220,60 +227,62 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             child: _vehicles.isEmpty
                 ? _buildEmptyState()
                 : ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Registered Vehicles',
-                              style: TextStyle(
-                                color: myVehiclesNavy,
-                                fontSize: 21,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${_vehicles.length} vehicle${_vehicles.length == 1 ? '' : 's'}',
-                            style: const TextStyle(color: Colors.blueGrey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      ...List.generate(
-                        _vehicles.length,
-                        (index) => _buildVehicleCard(_vehicles[index], index),
-                      ),
-                      const SizedBox(height: 18),
-                      OutlinedButton.icon(
-                        onPressed: _addVehicle,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Another Vehicle'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: myVehiclesBlue,
-                          padding: const EdgeInsets.all(16),
-                          side: const BorderSide(color: myVehiclesBlue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
-                          ),
+              padding: const EdgeInsets.all(20),
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Registered Vehicles',
+                        style: TextStyle(
+                          color: myVehiclesNavy,
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      const Center(
-                        child: Text(
-                          'Smart Auto Care • Your car, our responsibility',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 12,
-                          ),
-                        ),
+                    ),
+                    Text(
+                      '${_vehicles.length} vehicle${_vehicles.length == 1 ? '' : 's'}',
+                      style: const TextStyle(
+                        color: Colors.blueGrey,
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                ...List.generate(
+                  _vehicles.length,
+                      (index) => _buildVehicleCard(_vehicles[index], index),
+                ),
+                const SizedBox(height: 18),
+                OutlinedButton.icon(
+                  onPressed: _addVehicle,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Another Vehicle'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: myVehiclesBlue,
+                    padding: const EdgeInsets.all(16),
+                    side: const BorderSide(color: myVehiclesBlue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(13),
+                    ),
                   ),
+                ),
+                const SizedBox(height: 24),
+                const Center(
+                  child: Text(
+                    'Smart Auto Care • Your car, our responsibility',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -285,7 +294,10 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
       padding: const EdgeInsets.all(23),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+          colors: [
+            Color(0xFF1565C0),
+            Color(0xFF42A5F5),
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -314,7 +326,10 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 SizedBox(height: 8),
                 Text(
                   'Keep your vehicle information organized in one place.',
-                  style: TextStyle(color: Colors.white, height: 1.4),
+                  style: TextStyle(
+                    color: Colors.white,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -486,7 +501,10 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -537,7 +555,10 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             const Text(
               'Add your first vehicle to manage its details and service history.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.blueGrey, height: 1.5),
+              style: TextStyle(
+                color: Colors.blueGrey,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 23),
             FilledButton.icon(

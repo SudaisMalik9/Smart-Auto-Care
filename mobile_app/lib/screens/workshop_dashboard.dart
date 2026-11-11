@@ -8,11 +8,16 @@ class WorkshopDashboard extends StatefulWidget {
   const WorkshopDashboard({super.key});
 
   @override
-  State<WorkshopDashboard> createState() => _WorkshopDashboardState();
+  State<WorkshopDashboard> createState() =>
+      _WorkshopDashboardState();
 }
 
 class _WorkshopDashboardState extends State<WorkshopDashboard> {
   int _selectedIndex = 0;
+
+  bool _bookingNotifications = true;
+  bool _jobNotifications = true;
+  bool _invoiceNotifications = true;
 
   final Map<String, String> workshop = {
     'name': 'AutoCare Premium Workshop',
@@ -33,6 +38,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       'time': '10:00 AM',
       'status': 'Pending',
       'remarks': 'Please inspect engine oil and filters.',
+      'amount': 3500,
+      'invoiceStatus': 'Not Generated',
     },
     {
       'customer': 'Usman Khan',
@@ -44,6 +51,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       'time': '12:00 PM',
       'status': 'Accepted',
       'remarks': 'Use recommended engine oil.',
+      'amount': 2500,
+      'invoiceStatus': 'Not Generated',
     },
     {
       'customer': 'Hassan Raza',
@@ -55,6 +64,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       'time': '09:00 AM',
       'status': 'In Progress',
       'remarks': 'Check brake pads and brake fluid.',
+      'amount': 4200,
+      'invoiceStatus': 'Not Generated',
     },
     {
       'customer': 'Ahmed Faisal',
@@ -66,6 +77,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       'time': '11:00 AM',
       'status': 'Completed',
       'remarks': 'Interior and exterior cleaning.',
+      'amount': 1000,
+      'invoiceStatus': 'Not Generated',
     },
   ];
 
@@ -136,11 +149,15 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       bookings.where((b) => b['status'] == 'Completed').toList();
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
-  void _updateStatus(Map<String, dynamic> booking, String status) {
+  void _updateStatus(
+      Map<String, dynamic> booking,
+      String status,
+      ) {
     setState(() {
       booking['status'] = status;
     });
@@ -161,7 +178,24 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
   }
 
   void _completeBooking(Map<String, dynamic> booking) {
-    _updateStatus(booking, 'Completed');
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Complete Job'),
+        content: const Text('Confirm that this service job has been completed?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Not Yet')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _updateStatus(booking, 'Completed');
+              setState(() => booking['invoiceStatus'] = 'Ready to Generate');
+            },
+            child: const Text('Confirm Completion'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showBookingDetails(Map<String, dynamic> booking) {
@@ -170,7 +204,9 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(22),
+        ),
       ),
       builder: (sheetContext) {
         return Padding(
@@ -189,46 +225,23 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _detailRow(
-                  Icons.person_outline,
-                  'Customer',
-                  booking['customer'].toString(),
-                ),
-                _detailRow(
-                  Icons.phone_outlined,
-                  'Phone',
-                  booking['phone'].toString(),
-                ),
-                _detailRow(
-                  Icons.directions_car,
-                  'Vehicle',
-                  booking['vehicle'].toString(),
-                ),
-                _detailRow(
-                  Icons.confirmation_number_outlined,
-                  'Registration',
-                  booking['registration'].toString(),
-                ),
-                _detailRow(
-                  Icons.build_outlined,
-                  'Service',
-                  booking['service'].toString(),
-                ),
-                _detailRow(
-                  Icons.calendar_today,
-                  'Date',
-                  booking['date'].toString(),
-                ),
-                _detailRow(
-                  Icons.access_time,
-                  'Time',
-                  booking['time'].toString(),
-                ),
-                _detailRow(
-                  Icons.info_outline,
-                  'Status',
-                  booking['status'].toString(),
-                ),
+                _detailRow(Icons.person_outline, 'Customer',
+                    booking['customer'].toString()),
+                _detailRow(Icons.phone_outlined, 'Phone',
+                    booking['phone'].toString()),
+                _detailRow(Icons.directions_car, 'Vehicle',
+                    booking['vehicle'].toString()),
+                _detailRow(Icons.confirmation_number_outlined,
+                    'Registration',
+                    booking['registration'].toString()),
+                _detailRow(Icons.build_outlined, 'Service',
+                    booking['service'].toString()),
+                _detailRow(Icons.calendar_today, 'Date',
+                    booking['date'].toString()),
+                _detailRow(Icons.access_time, 'Time',
+                    booking['time'].toString()),
+                _detailRow(Icons.info_outline, 'Status',
+                    booking['status'].toString()),
                 const SizedBox(height: 12),
                 const Text(
                   'Customer Remarks',
@@ -259,6 +272,200 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
         );
       },
+    );
+  }
+
+  void _openNotifications() {
+    final messages = <String>[];
+    if (_bookingNotifications && pendingBookings.isNotEmpty) {
+      messages.add('${pendingBookings.length} new booking request(s) need your review.');
+    }
+    if (_jobNotifications && activeJobs.isNotEmpty) {
+      messages.add('${activeJobs.length} job(s) are currently in progress.');
+    }
+    if (_invoiceNotifications && completedBookings.isNotEmpty) {
+      messages.add('${completedBookings.length} completed service(s) can be invoiced.');
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _WorkshopNotificationsPage(messages: messages),
+      ),
+    );
+  }
+
+  void _openInvoices() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _WorkshopInvoicesPage(
+          bookings: completedBookings,
+          onGenerate: (booking) {
+            setState(() {
+              booking['invoiceStatus'] = 'Generated';
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void _openCustomerDetails(Map<String, String> customer) {
+    final related = bookings.where((b) =>
+    b['customer'] == customer['name'] ||
+        b['registration'] == customer['registration']).toList();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.all(22),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(customer['name'] ?? 'Customer',
+                  style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: workshopNavy)),
+              const SizedBox(height: 16),
+              _detailRow(Icons.phone_outlined, 'Phone', customer['phone'] ?? ''),
+              _detailRow(Icons.directions_car, 'Vehicle', customer['vehicle'] ?? ''),
+              _detailRow(Icons.confirmation_number_outlined, 'Registration', customer['registration'] ?? ''),
+              const Divider(height: 24),
+              const Text('Service Records', style: TextStyle(fontWeight: FontWeight.bold, color: workshopNavy)),
+              const SizedBox(height: 8),
+              if (related.isEmpty)
+                const Text('No service records found for this customer.')
+              else
+                ...related.map((b) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(b['service'].toString()),
+                  subtitle: Text('${b['date']} • ${b['status']}'),
+                  trailing: _statusBadge(b['status'].toString()),
+                )),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  child: const Text('Close'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showServiceEditor({Map<String, dynamic>? service}) {
+    final name = TextEditingController(text: service?['name']?.toString() ?? '');
+    final price = TextEditingController(
+      text: service == null ? '' : service['price'].toString().replaceAll('Rs. ', ''),
+    );
+    final description = TextEditingController(text: service?['description']?.toString() ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(service == null ? 'Add Service' : 'Edit Service'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: name, decoration: const InputDecoration(labelText: 'Service Name')),
+              TextField(controller: price, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Price (PKR)')),
+              TextField(controller: description, maxLines: 2, decoration: const InputDecoration(labelText: 'Description')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(price.text.trim());
+              if (name.text.trim().isEmpty || amount == null || amount < 0) {
+                _showMessage('Enter a service name and a valid price.');
+                return;
+              }
+              setState(() {
+                if (service == null) {
+                  services.add({
+                    'name': name.text.trim(),
+                    'price': 'Rs. ${amount.toStringAsFixed(0)}',
+                    'description': description.text.trim(),
+                    'active': true,
+                  });
+                } else {
+                  service['name'] = name.text.trim();
+                  service['price'] = 'Rs. ${amount.toStringAsFixed(0)}';
+                  service['description'] = description.text.trim();
+                }
+              });
+              Navigator.pop(dialogContext);
+              _showMessage(service == null ? 'Service added.' : 'Service updated.');
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editWorkshopField(String title, String key) {
+    final controller = TextEditingController(text: workshop[key] ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Edit $title'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: title),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isEmpty) {
+                _showMessage('$title cannot be empty.');
+                return;
+              }
+              setState(() => workshop[key] = controller.text.trim());
+              Navigator.pop(dialogContext);
+              _showMessage('$title updated.');
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelpSupport() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const _WorkshopHelpPage()),
+    );
+  }
+
+  void _confirmLogout() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out of the workshop account?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -297,13 +504,19 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: workshopNavy),
-            onPressed: () => _showMessage('No new notifications.'),
+            icon: const Icon(
+              Icons.notifications_none,
+              color: workshopNavy,
+            ),
+            onPressed: _openNotifications,
           ),
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(index: _selectedIndex, children: pages),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: pages,
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -313,12 +526,18 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           setState(() => _selectedIndex = index);
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             label: 'Bookings',
           ),
-          NavigationDestination(icon: Icon(Icons.work_outline), label: 'Jobs'),
+          NavigationDestination(
+            icon: Icon(Icons.work_outline),
+            label: 'Jobs',
+          ),
           NavigationDestination(
             icon: Icon(Icons.build_outlined),
             label: 'Services',
@@ -362,7 +581,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           const SizedBox(height: 14),
 
           GridView.count(
-            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 4 : 2,
+            crossAxisCount:
+            MediaQuery.of(context).size.width > 650 ? 4 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
@@ -401,7 +621,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('New Service Requests', style: _headingStyle),
+              const Text('New Service Requests',
+                  style: _headingStyle),
               TextButton(
                 onPressed: () {
                   setState(() => _selectedIndex = 1);
@@ -452,7 +673,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
               color: const Color(0xFFEAF3FF),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(Icons.storefront, color: workshopBlue, size: 34),
+            child: const Icon(
+              Icons.storefront,
+              color: workshopBlue,
+              size: 34,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -470,7 +695,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 const SizedBox(height: 5),
                 Text(
                   workshop['location']!,
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 7),
                 Row(
@@ -497,7 +725,12 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
 
   // STATISTICS CARD
 
-  Widget _statCard(String title, String value, IconData icon, Color color) {
+  Widget _statCard(
+      String title,
+      String value,
+      IconData icon,
+      Color color,
+      ) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,7 +748,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.blueGrey,
+            ),
           ),
         ],
       ),
@@ -548,13 +784,21 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             ],
           ),
           const Divider(height: 24),
-          _detailRow(Icons.directions_car, 'Vehicle', booking['vehicle']),
+          _detailRow(
+            Icons.directions_car,
+            'Vehicle',
+            booking['vehicle'],
+          ),
           _detailRow(
             Icons.confirmation_number_outlined,
             'Registration',
             booking['registration'],
           ),
-          _detailRow(Icons.build_outlined, 'Service', booking['service']),
+          _detailRow(
+            Icons.build_outlined,
+            'Service',
+            booking['service'],
+          ),
           _detailRow(
             Icons.calendar_today,
             'Date & Time',
@@ -609,7 +853,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.build_circle_outlined, color: workshopBlue),
+              const Icon(Icons.build_circle_outlined,
+                  color: workshopBlue),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
@@ -624,14 +869,14 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             ],
           ),
           const SizedBox(height: 15),
-          _detailRow(Icons.person_outline, 'Customer', booking['customer']),
-          _detailRow(Icons.directions_car, 'Vehicle', booking['vehicle']),
-          _detailRow(
-            Icons.confirmation_number_outlined,
-            'Registration',
-            booking['registration'],
-          ),
-          _detailRow(Icons.calendar_today, 'Date', booking['date']),
+          _detailRow(Icons.person_outline, 'Customer',
+              booking['customer']),
+          _detailRow(Icons.directions_car, 'Vehicle',
+              booking['vehicle']),
+          _detailRow(Icons.confirmation_number_outlined,
+              'Registration', booking['registration']),
+          _detailRow(Icons.calendar_today, 'Date',
+              booking['date']),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -652,7 +897,13 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
 
   // BOOKINGS PAGE
 
+  String _bookingFilter = 'All';
+
   Widget _buildBookingsPage() {
+    final visibleBookings = bookings.where((booking) {
+      if (_bookingFilter == 'All') return booking['status'] != 'Rejected';
+      return booking['status'] == _bookingFilter;
+    }).toList();
     return _pageLayout(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,18 +914,28 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             'Manage incoming customer service requests.',
             style: TextStyle(color: Colors.blueGrey),
           ),
-          const SizedBox(height: 20),
-
-          if (bookings.isEmpty)
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ['All', 'Pending', 'Accepted', 'In Progress', 'Completed'].map((filter) {
+              return ChoiceChip(
+                label: Text(filter),
+                selected: _bookingFilter == filter,
+                selectedColor: const Color(0xFFE7F0FF),
+                onSelected: (_) => setState(() => _bookingFilter = filter),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          if (visibleBookings.isEmpty)
             _emptyCard(
               Icons.calendar_month,
               'No bookings',
-              'Customer bookings will appear here.',
+              'No bookings match this filter.',
             )
           else
-            ...bookings
-                .where((b) => b['status'] != 'Rejected')
-                .map(_buildBookingCard),
+            ...visibleBookings.map(_buildBookingCard),
         ],
       ),
     );
@@ -683,9 +944,9 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
   // JOBS PAGE
 
   Widget _buildJobsPage() {
-    final jobs = bookings
-        .where((b) => b['status'] == 'Accepted' || b['status'] == 'In Progress')
-        .toList();
+    final jobs = bookings.where((b) =>
+    b['status'] == 'Accepted' ||
+        b['status'] == 'In Progress').toList();
 
     return _pageLayout(
       child: Column(
@@ -724,14 +985,18 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                       const SizedBox(height: 8),
                       Text(
                         '${booking['customer']} • ${booking['vehicle']}',
-                        style: const TextStyle(color: Colors.blueGrey),
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () =>
-                              _updateStatus(booking, 'In Progress'),
+                          onPressed: () => _updateStatus(
+                            booking,
+                            'In Progress',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: workshopBlue,
                             foregroundColor: Colors.white,
@@ -758,7 +1023,18 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Workshop Services', style: _headingStyle),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(child: Text('Workshop Services', style: _headingStyle)),
+              ElevatedButton.icon(
+                onPressed: () => _showServiceEditor(),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add'),
+                style: ElevatedButton.styleFrom(backgroundColor: workshopBlue, foregroundColor: Colors.white),
+              ),
+            ],
+          ),
           const SizedBox(height: 7),
           const Text(
             'View the services offered by your workshop.',
@@ -778,7 +1054,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                       color: const Color(0xFFEAF3FF),
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: const Icon(Icons.build, color: workshopBlue),
+                    child: const Icon(
+                      Icons.build,
+                      color: workshopBlue,
+                    ),
                   ),
                   const SizedBox(width: 13),
                   Expanded(
@@ -811,14 +1090,29 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                       ],
                     ),
                   ),
-                  Switch(
-                    value: service['active'],
-                    activeColor: workshopBlue,
-                    onChanged: (value) {
-                      setState(() {
-                        service['active'] = value;
-                      });
-                    },
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Switch(
+                        value: service['active'],
+                        activeColor: workshopBlue,
+                        onChanged: (value) => setState(() => service['active'] = value),
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected: (choice) {
+                          if (choice == 'edit') {
+                            _showServiceEditor(service: service);
+                          } else if (choice == 'delete') {
+                            setState(() => services.remove(service));
+                            _showMessage('Service removed.');
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -855,10 +1149,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
               ),
               subtitle: Text(
                 '${customer['phone']}\n'
-                '${customer['vehicle']} • ${customer['registration']}',
+                    '${customer['vehicle']} • ${customer['registration']}',
               ),
               isThreeLine: true,
               trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openCustomerDetails(customer),
             ),
           );
         }),
@@ -875,7 +1170,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           const CircleAvatar(
             radius: 48,
             backgroundColor: Color(0xFFEAF3FF),
-            child: Icon(Icons.storefront, color: workshopBlue, size: 52),
+            child: Icon(
+              Icons.storefront,
+              color: workshopBlue,
+              size: 52,
+            ),
           ),
           const SizedBox(height: 15),
           Text(
@@ -894,10 +1193,33 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           const SizedBox(height: 25),
 
-          _profileOption(Icons.store_outlined, 'Workshop Information'),
-          _profileOption(Icons.location_on_outlined, 'Workshop Address'),
-          _profileOption(Icons.phone_outlined, 'Contact Information'),
-          _profileOption(Icons.verified_user_outlined, 'Verification Status'),
+          _profileOption(
+            Icons.store_outlined,
+            'Workshop Information',
+            onTap: () => _editWorkshopField('Workshop Name', 'name'),
+          ),
+          _profileOption(
+            Icons.location_on_outlined,
+            'Workshop Address',
+            onTap: () => _editWorkshopField('Workshop Address', 'location'),
+          ),
+          _profileOption(
+            Icons.phone_outlined,
+            'Contact Information',
+            onTap: () => _editWorkshopField('Phone Number', 'phone'),
+          ),
+          _profileOption(
+            Icons.verified_user_outlined,
+            'Verification Status',
+            onTap: () => showDialog<void>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('Verification Status'),
+                content: Text('Workshop status: ${workshop['status']}. This is demo status; live verification will be connected later.'),
+                actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close'))],
+              ),
+            ),
+          ),
           _profileOption(
             Icons.people_outline,
             'Customer Records',
@@ -907,19 +1229,27 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 isScrollControlled: true,
                 builder: (context) => Padding(
                   padding: const EdgeInsets.all(20),
-                  child: SingleChildScrollView(child: _buildCustomersSection()),
+                  child: SingleChildScrollView(
+                    child: _buildCustomersSection(),
+                  ),
                 ),
               );
             },
           ),
-          _profileOption(Icons.help_outline, 'Help & Support'),
-          _profileOption(Icons.logout, 'Log Out'),
+          _profileOption(Icons.receipt_long_outlined, 'Invoices', onTap: _openInvoices),
+          _profileOption(Icons.notifications_outlined, 'Notifications', onTap: _openNotifications),
+          _profileOption(Icons.help_outline, 'Help & Support', onTap: _showHelpSupport),
+          _profileOption(Icons.logout, 'Log Out', onTap: _confirmLogout),
         ],
       ),
     );
   }
 
-  Widget _profileOption(IconData icon, String title, {VoidCallback? onTap}) {
+  Widget _profileOption(
+      IconData icon,
+      String title, {
+        VoidCallback? onTap,
+      }) {
     return Card(
       color: Colors.white,
       elevation: 0,
@@ -932,7 +1262,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         leading: Icon(icon, color: workshopBlue),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
-        onTap: onTap ?? () => _showMessage('$title will be implemented later.'),
+        onTap: onTap ??
+                () => _showMessage(
+              '$title will be implemented later.',
+            ),
       ),
     );
   }
@@ -951,7 +1284,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _card({required Widget child, EdgeInsetsGeometry? margin}) {
+  Widget _card({
+    required Widget child,
+    EdgeInsetsGeometry? margin,
+  }) {
     return Container(
       width: double.infinity,
       margin: margin,
@@ -965,7 +1301,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(
+      IconData icon,
+      String label,
+      String value,
+      ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -977,7 +1317,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             width: 105,
             child: Text(
               label,
-              style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+              style: const TextStyle(
+                color: Colors.blueGrey,
+                fontSize: 12,
+              ),
             ),
           ),
           Expanded(
@@ -1016,7 +1359,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.10),
         borderRadius: BorderRadius.circular(20),
@@ -1032,7 +1378,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _emptyCard(IconData icon, String title, String subtitle) {
+  Widget _emptyCard(
+      IconData icon,
+      String title,
+      String subtitle,
+      ) {
     return _card(
       child: Column(
         children: [
@@ -1049,7 +1399,10 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.blueGrey,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -1062,3 +1415,183 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     color: workshopNavy,
   );
 }
+
+// =========================================================
+// WORKSHOP SUPPORT SCREENS
+// =========================================================
+
+class _WorkshopInvoicesPage extends StatelessWidget {
+  final List<Map<String, dynamic>> bookings;
+  final ValueChanged<Map<String, dynamic>> onGenerate;
+
+  const _WorkshopInvoicesPage({
+    required this.bookings,
+    required this.onGenerate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: workshopBackground,
+      appBar: AppBar(
+        title: const Text('Service Invoices'),
+        backgroundColor: Colors.white,
+        foregroundColor: workshopNavy,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text('Completed Services',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: workshopNavy)),
+          const SizedBox(height: 8),
+          const Text('Generate a demo invoice for a completed service.',
+              style: TextStyle(color: Colors.blueGrey)),
+          const SizedBox(height: 16),
+          if (bookings.isEmpty)
+            const Card(child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('No completed services are ready for invoicing.'),
+            ))
+          else
+            ...bookings.map((booking) => Card(
+              color: Colors.white,
+              elevation: 0,
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(booking['service'].toString(),
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: workshopNavy)),
+                    const SizedBox(height: 6),
+                    Text('${booking['customer']} • ${booking['vehicle']}'),
+                    Text('Amount: Rs. ${booking['amount'] ?? 0}'),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: Text('Invoice: ${booking['invoiceStatus'] ?? 'Not Generated'}')),
+                        ElevatedButton(
+                          onPressed: booking['invoiceStatus'] == 'Generated'
+                              ? null
+                              : () {
+                            onGenerate(booking);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Demo invoice generated.')),
+                            );
+                          },
+                          child: Text(booking['invoiceStatus'] == 'Generated' ? 'Generated' : 'Generate'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkshopNotificationsPage extends StatelessWidget {
+  final List<String> messages;
+
+  const _WorkshopNotificationsPage({required this.messages});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: workshopBackground,
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        backgroundColor: Colors.white,
+        foregroundColor: workshopNavy,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text('Workshop Updates',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: workshopNavy)),
+          const SizedBox(height: 14),
+          if (messages.isEmpty)
+            const Card(child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('No current workshop notifications.'),
+            ))
+          else
+            ...messages.map((message) => Card(
+              color: Colors.white,
+              elevation: 0,
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFEAF3FF),
+                  child: Icon(Icons.notifications_active_outlined, color: workshopBlue),
+                ),
+                title: Text(message),
+              ),
+            )),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkshopHelpPage extends StatelessWidget {
+  const _WorkshopHelpPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: workshopBackground,
+      appBar: AppBar(
+        title: const Text('Help & Support'),
+        backgroundColor: Colors.white,
+        foregroundColor: workshopNavy,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text('Workshop Help',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: workshopNavy)),
+          const SizedBox(height: 14),
+          _faq('How do I handle a new booking?',
+              'Open Bookings, review the customer and vehicle details, then accept or reject the request.'),
+          _faq('How do I start a service job?',
+              'Accept a booking first. It will appear in Jobs, where you can select Start Job.'),
+          _faq('How do I complete a job?',
+              'Open the active job and select Mark as Completed after the work is finished.'),
+          _faq('How do I manage workshop services?',
+              'Open Services to add, edit, delete, or temporarily deactivate a service.'),
+          _faq('How do I generate an invoice?',
+              'After completing a job, open Profile > Invoices and generate a demo invoice for that service.'),
+          _faq('Are changes saved permanently?',
+              'This version stores demo data in memory. Firebase/database integration is required for permanent storage and owner-side synchronization.'),
+        ],
+      ),
+    );
+  }
+
+  Widget _faq(String question, String answer) {
+    return Card(
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ExpansionTile(
+        title: Text(question, style: const TextStyle(fontWeight: FontWeight.w600)),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(answer, style: const TextStyle(color: Colors.blueGrey, height: 1.4)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

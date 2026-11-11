@@ -27,7 +27,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
   final List<int> _years = List.generate(
     36,
-    (index) => DateTime.now().year + 1 - index,
+        (index) => DateTime.now().year + 1 - index,
   );
 
   @override
@@ -47,13 +47,16 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
     if (_selectedYear == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select the manufacturing year.')),
+        const SnackBar(
+          content: Text('Please select the manufacturing year.'),
+        ),
       );
       return;
     }
 
     final vehicle = <String, dynamic>{
-      'registrationNumber': _registrationController.text.trim().toUpperCase(),
+      'registrationNumber':
+      _registrationController.text.trim().toUpperCase(),
       'make': _makeController.text.trim(),
       'model': _modelController.text.trim(),
       'year': _selectedYear,
@@ -76,12 +79,18 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: vehicleNavy),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: vehicleNavy,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Add Vehicle',
-          style: TextStyle(color: vehicleNavy, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: vehicleNavy,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SafeArea(
@@ -100,7 +109,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                          colors: [
+                            Color(0xFF1565C0),
+                            Color(0xFF42A5F5),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(22),
                       ),
@@ -121,7 +133,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                 SizedBox(height: 9),
                                 Text(
                                   'Add your vehicle details to manage '
-                                  'maintenance and service bookings.',
+                                      'maintenance and service bookings.',
                                   style: TextStyle(
                                     color: Colors.white,
                                     height: 1.5,
@@ -354,9 +366,12 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
                     const Text(
                       'Your vehicle details are currently stored '
-                      'temporarily during this demo.',
+                          'temporarily during this demo.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -395,8 +410,13 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       textCapitalization: uppercase
           ? TextCapitalization.characters
           : TextCapitalization.words,
-      keyboardType: numberOnly ? TextInputType.number : TextInputType.text,
-      decoration: _decoration(label: label, hint: hint, icon: icon),
+      keyboardType:
+      numberOnly ? TextInputType.number : TextInputType.text,
+      decoration: _decoration(
+        label: label,
+        hint: hint,
+        icon: icon,
+      ),
       validator: (value) {
         final text = value?.trim() ?? '';
 
@@ -428,9 +448,16 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     return DropdownButtonFormField<T>(
       value: value,
       isExpanded: true,
-      decoration: _decoration(label: label, hint: 'Select $label', icon: icon),
+      decoration: _decoration(
+        label: label,
+        hint: 'Select $label',
+        icon: icon,
+      ),
       items: items.map((item) {
-        return DropdownMenuItem<T>(value: item, child: Text(itemLabel(item)));
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(itemLabel(item)),
+        );
       }).toList(),
       onChanged: onChanged,
       validator: (selected) {
@@ -453,7 +480,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       prefixIcon: Icon(icon, color: vehicleBlue),
       filled: true,
       fillColor: const Color(0xFFFAFBFD),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 15,
+        vertical: 17,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
         borderSide: const BorderSide(color: Color(0xFFD8E0E9)),
@@ -464,7 +494,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
-        borderSide: const BorderSide(color: vehicleBlue, width: 1.5),
+        borderSide: const BorderSide(
+          color: vehicleBlue,
+          width: 1.5,
+        ),
       ),
     );
   }
