@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -81,8 +82,8 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 18),
                   const Text(
                     'Manage your vehicles, find trusted workshops, '
-                        'book services and keep your maintenance history '
-                        'in one convenient place.',
+                    'book services and keep your maintenance history '
+                    'in one convenient place.',
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.7,
@@ -95,10 +96,7 @@ class WelcomeScreen extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFD9E8FF),
-                          Color(0xFFF0F5FF),
-                        ],
+                        colors: [Color(0xFFD9E8FF), Color(0xFFF0F5FF)],
                       ),
                       borderRadius: BorderRadius.circular(24),
                     ),
@@ -168,10 +166,7 @@ class WelcomeScreen extends StatelessWidget {
                   const Center(
                     child: Text(
                       'Vehicle management made simple',
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
                     ),
                   ),
                 ],
@@ -219,10 +214,7 @@ class _FeatureCard extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.blueGrey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
         ],
       ),

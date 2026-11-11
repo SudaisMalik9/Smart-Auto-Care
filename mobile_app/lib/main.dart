@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'screens/login_screen.dart';
@@ -20,9 +19,7 @@ class SmartAutoCareApp extends StatelessWidget {
       title: 'Smart Auto Care',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1565C0),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1565C0)),
         scaffoldBackgroundColor: const Color(0xFFF5F7FB),
         fontFamily: 'Roboto',
       ),
@@ -56,10 +53,7 @@ class WelcomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 20,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1100),
               child: Column(
@@ -143,9 +137,7 @@ class WelcomeScreen extends StatelessWidget {
 
                           Text(
                             'Smarter Care\nfor Your Vehicle',
-                            textAlign: wide
-                                ? TextAlign.left
-                                : TextAlign.center,
+                            textAlign: wide ? TextAlign.left : TextAlign.center,
                             style: TextStyle(
                               fontSize: wide ? 43 : 34,
                               height: 1.15,
@@ -158,8 +150,8 @@ class WelcomeScreen extends StatelessWidget {
 
                           const Text(
                             'Manage your vehicle, find trusted workshops, '
-                                'book services, and keep everything organized '
-                                'in one convenient place.',
+                            'book services, and keep everything organized '
+                            'in one convenient place.',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 15,
@@ -178,8 +170,7 @@ class WelcomeScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                    const LoginScreen(),
+                                    builder: (context) => const LoginScreen(),
                                   ),
                                 );
                               },
@@ -191,19 +182,12 @@ class WelcomeScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Get Started',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Icon(Icons.arrow_forward_rounded),
-                                ],
+                              child: const Text(
+                                'Get Started',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -225,10 +209,7 @@ class WelcomeScreen extends StatelessWidget {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF1565C0),
-                              Color(0xFF42A5F5),
-                            ],
+                            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -262,9 +243,7 @@ class WelcomeScreen extends StatelessWidget {
                                   height: 150,
                                   width: 150,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.15,
-                                    ),
+                                    color: Colors.white.withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -300,15 +279,9 @@ class WelcomeScreen extends StatelessWidget {
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Expanded(
-                              flex: 5,
-                              child: textSection,
-                            ),
+                            Expanded(flex: 5, child: textSection),
                             const SizedBox(width: 45),
-                            Expanded(
-                              flex: 4,
-                              child: illustration,
-                            ),
+                            Expanded(flex: 4, child: illustration),
                           ],
                         );
                       }
@@ -335,19 +308,19 @@ class WelcomeScreen extends StatelessWidget {
                           icon: Icons.car_repair_rounded,
                           title: 'Vehicle Care',
                           description:
-                          'Keep track of your vehicles and maintenance.',
+                              'Keep track of your vehicles and maintenance.',
                         ),
                         const FeatureItem(
                           icon: Icons.location_on_rounded,
                           title: 'Find Workshops',
                           description:
-                          'Discover workshops for your vehicle needs.',
+                              'Discover workshops for your vehicle needs.',
                         ),
                         const FeatureItem(
                           icon: Icons.calendar_month_rounded,
                           title: 'Easy Booking',
                           description:
-                          'Plan and manage your service appointments.',
+                              'Plan and manage your service appointments.',
                         ),
                       ];
 
@@ -357,14 +330,14 @@ class WelcomeScreen extends StatelessWidget {
                           children: features
                               .map(
                                 (feature) => Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: feature,
+                                  ),
                                 ),
-                                child: feature,
-                              ),
-                            ),
-                          )
+                              )
                               .toList(),
                         );
                       }
@@ -373,10 +346,10 @@ class WelcomeScreen extends StatelessWidget {
                         children: features
                             .map(
                               (feature) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: feature,
-                          ),
-                        )
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: feature,
+                              ),
+                            )
                             .toList(),
                       );
                     },
@@ -390,10 +363,7 @@ class WelcomeScreen extends StatelessWidget {
 
                   const Text(
                     'Smart Auto Care © 2026',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blueGrey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.blueGrey),
                   ),
                 ],
               ),
@@ -448,11 +418,7 @@ class FeatureItem extends StatelessWidget {
               color: const Color(0xFFEAF3FF),
               borderRadius: BorderRadius.circular(13),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF1565C0),
-              size: 25,
-            ),
+            child: Icon(icon, color: const Color(0xFF1565C0), size: 25),
           ),
           const SizedBox(height: 15),
           Text(

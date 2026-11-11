@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'add_vehicle_screen.dart';
 import 'find_workshop_screen.dart';
 import 'book_service_screen.dart';
@@ -11,14 +12,13 @@ class VehicleOwnerDashboard extends StatefulWidget {
   const VehicleOwnerDashboard({super.key});
 
   @override
-  State<VehicleOwnerDashboard> createState() =>
-      _VehicleOwnerDashboardState();
+  State<VehicleOwnerDashboard> createState() => _VehicleOwnerDashboardState();
 }
 
 class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   int _selectedIndex = 0;
 
-// Temporary profile data. This will be connected to Firebase later.
+  // Temporary profile data. This will be connected to Firebase later.
   String _ownerName = 'Vehicle Owner';
   String _ownerEmail = 'owner@example.com';
   String _ownerPhone = '+92 300 1234567';
@@ -27,7 +27,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   bool _serviceReminders = true;
   bool _promotionalNotifications = false;
 
-// Temporary demo data. Firebase will be integrated later.
+  // Temporary demo data. Firebase will be integrated later.
   final List<Map<String, dynamic>> _vehicles = [
     {
       'registrationNumber': 'ABC-123',
@@ -81,9 +81,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   Future<void> _openAddVehicle() async {
     final vehicle = await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddVehicleScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddVehicleScreen()),
     );
 
     if (!mounted || vehicle == null) return;
@@ -101,13 +99,11 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-// Find Workshop: opens workshop discovery and receives confirmed booking.
+  // Find Workshop: opens workshop discovery and receives confirmed booking.
   Future<void> _openFindWorkshop() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const FindWorkshopScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const FindWorkshopScreen()),
     );
 
     if (!mounted || result == null) return;
@@ -125,13 +121,11 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     _showMessage('Your service booking has been added successfully!');
   }
 
-// Book Service: opens the booking form and adds the returned booking.
+  // Book Service: opens the booking form and adds the returned booking.
   Future<void> _openBookService() async {
     final result = await Navigator.push<dynamic>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const BookServiceScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const BookServiceScreen()),
     );
 
     if (!mounted || result == null || result is! Map) return;
@@ -161,19 +155,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     });
   }
 
-  void _openProfile() {
-    setState(() {
-      _selectedIndex = 3;
-    });
-  }
+
 
   bool _isActiveBooking(Map<String, String> booking) {
     final status = (booking['status'] ?? '').toLowerCase();
     return status != 'cancelled' && status != 'completed';
   }
 
-  int get _activeBookingCount =>
-      _bookings.where(_isActiveBooking).length;
+  int get _activeBookingCount => _bookings.where(_isActiveBooking).length;
 
   void _openServiceHistory() {
     Navigator.push(
@@ -243,7 +232,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
-          Expanded(child: Text(value?.isNotEmpty == true ? value! : 'Not provided')),
+          Expanded(
+            child: Text(value?.isNotEmpty == true ? value! : 'Not provided'),
+          ),
         ],
       ),
     );
@@ -265,10 +256,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: dashboardNavy,
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, color: dashboardNavy),
           onPressed: () => Navigator.maybePop(context),
         ),
         title: const Row(
@@ -304,10 +292,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
@@ -340,9 +325,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-// ---------------------------------------------------------
-// HOME DASHBOARD
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // HOME DASHBOARD
+  // ---------------------------------------------------------
 
   Widget _buildHome() {
     return LayoutBuilder(
@@ -350,10 +335,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         final wide = constraints.maxWidth >= 850;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 22,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1150),
@@ -371,10 +353,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                   const SizedBox(height: 8),
                   const Text(
                     'Manage your vehicles and keep them running smoothly.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blueGrey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                   ),
                   const SizedBox(height: 26),
 
@@ -453,14 +432,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                         onTap: _openAddVehicle,
                       ),
 
-// FIND WORKSHOP BUTTON
+                      // FIND WORKSHOP BUTTON
                       _QuickAction(
                         icon: Icons.search_rounded,
                         title: 'Find Workshop',
                         onTap: _openFindWorkshop,
                       ),
 
-// BOOK SERVICE BUTTON
+                      // BOOK SERVICE BUTTON
                       _QuickAction(
                         icon: Icons.event_available_outlined,
                         title: 'Book Service',
@@ -503,12 +482,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                       subtitle: 'Your future appointments will appear here.',
                     )
                   else
-                    ..._bookings.take(2).map(
+                    ..._bookings
+                        .take(2)
+                        .map(
                           (booking) => _BookingTile(
-                        booking: booking,
-                        onTap: () => _showBookingDetails(booking),
-                      ),
-                    ),
+                            booking: booking,
+                            onTap: () => _showBookingDetails(booking),
+                          ),
+                        ),
 
                   const SizedBox(height: 26),
 
@@ -529,11 +510,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                       subtitle: 'Your completed services will appear here.',
                     )
                   else
-                    ..._activities.take(4).map(
-                          (activity) => _ActivityTile(
-                        activity: activity,
-                      ),
-                    ),
+                    ..._activities
+                        .take(4)
+                        .map((activity) => _ActivityTile(activity: activity)),
 
                   const SizedBox(height: 24),
                 ],
@@ -551,10 +530,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1565C0),
-            Color(0xFF42A5F5),
-          ],
+          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
         ),
         borderRadius: BorderRadius.circular(23),
       ),
@@ -576,28 +552,21 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 SizedBox(height: 10),
                 Text(
                   'Reliable care, all in one place.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ],
             ),
           ),
           SizedBox(width: 15),
-          Icon(
-            Icons.car_repair_rounded,
-            size: 60,
-            color: Colors.white,
-          ),
+          Icon(Icons.car_repair_rounded, size: 60, color: Colors.white),
         ],
       ),
     );
   }
 
-// ---------------------------------------------------------
-// VEHICLES PAGE
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // VEHICLES PAGE
+  // ---------------------------------------------------------
 
   Widget _buildVehiclesPage() {
     return _pageContainer(
@@ -610,67 +579,65 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       ),
       child: _vehicles.isEmpty
           ? _emptyCard(
-        icon: Icons.directions_car_outlined,
-        title: 'No vehicles registered',
-        subtitle: 'Add your first vehicle to get started.',
-      )
+              icon: Icons.directions_car_outlined,
+              title: 'No vehicles registered',
+              subtitle: 'Add your first vehicle to get started.',
+            )
           : Column(
-        children: _vehicles.map((vehicle) {
-          return Card(
-            color: Colors.white,
-            elevation: 0,
-            margin: const EdgeInsets.only(bottom: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-              side: const BorderSide(
-                color: Color(0xFFE5EAF0),
-              ),
+              children: _vehicles.map((vehicle) {
+                return Card(
+                  color: Colors.white,
+                  elevation: 0,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    side: const BorderSide(color: Color(0xFFE5EAF0)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(18),
+                    leading: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF3FF),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_filled_rounded,
+                        color: dashboardBlue,
+                        size: 29,
+                      ),
+                    ),
+                    title: Text(
+                      '${vehicle['make']} ${vehicle['model']}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: dashboardNavy,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${vehicle['registrationNumber']}\n'
+                        '${vehicle['year']} • ${vehicle['color']} • '
+                        '${vehicle['mileage']} km',
+                      ),
+                    ),
+                    isThreeLine: true,
+                    trailing: IconButton(
+                      tooltip: 'Delete vehicle',
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.redAccent,
+                      ),
+                      onPressed: () {
+                        _confirmDeleteVehicle(vehicle);
+                      },
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(18),
-              leading: Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF3FF),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.directions_car_filled_rounded,
-                  color: dashboardBlue,
-                  size: 29,
-                ),
-              ),
-              title: Text(
-                '${vehicle['make']} ${vehicle['model']}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: dashboardNavy,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  '${vehicle['registrationNumber']}\n'
-                      '${vehicle['year']} • ${vehicle['color']} • '
-                      '${vehicle['mileage']} km',
-                ),
-              ),
-              isThreeLine: true,
-              trailing: IconButton(
-                tooltip: 'Delete vehicle',
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.redAccent,
-                ),
-                onPressed: () {
-                  _confirmDeleteVehicle(vehicle);
-                },
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 
@@ -696,10 +663,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 Navigator.pop(dialogContext);
                 _showMessage('Vehicle removed.');
               },
-              child: const Text(
-                'Remove',
-                style: TextStyle(color: Colors.red),
-              ),
+              child: const Text('Remove', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -707,13 +671,15 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-// ---------------------------------------------------------
-// BOOKINGS PAGE
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // BOOKINGS PAGE
+  // ---------------------------------------------------------
 
   Widget _buildBookingsPage() {
     final activeBookings = _bookings.where(_isActiveBooking).toList();
-    final pastBookings = _bookings.where((booking) => !_isActiveBooking(booking)).toList();
+    final pastBookings = _bookings
+        .where((booking) => !_isActiveBooking(booking))
+        .toList();
 
     return _pageContainer(
       title: 'My Bookings',
@@ -743,7 +709,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             )
           else
             ...activeBookings.map(
-                  (booking) => _BookingTile(
+              (booking) => _BookingTile(
                 booking: booking,
                 onTap: () => _showBookingDetails(booking),
               ),
@@ -766,7 +732,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             )
           else
             ...pastBookings.map(
-                  (booking) => _BookingTile(
+              (booking) => _BookingTile(
                 booking: booking,
                 onTap: () => _showBookingDetails(booking),
               ),
@@ -776,9 +742,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-// ---------------------------------------------------------
-// PROFILE PAGE
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // PROFILE PAGE
+  // ---------------------------------------------------------
 
   Widget _buildProfilePage() {
     return _pageContainer(
@@ -792,9 +758,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFE5EAF0),
-              ),
+              border: Border.all(color: const Color(0xFFE5EAF0)),
             ),
             child: Column(
               children: [
@@ -817,10 +781,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                   ),
                 ),
                 SizedBox(height: 6),
-                Text(
-                  'Demo account',
-                  style: TextStyle(color: Colors.blueGrey),
-                ),
+                Text('Demo account', style: TextStyle(color: Colors.blueGrey)),
               ],
             ),
           ),
@@ -885,9 +846,11 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
     if (!mounted || result == null) return;
     setState(() {
-      _bookingNotifications = result['bookingNotifications'] ?? _bookingNotifications;
+      _bookingNotifications =
+          result['bookingNotifications'] ?? _bookingNotifications;
       _serviceReminders = result['serviceReminders'] ?? _serviceReminders;
-      _promotionalNotifications = result['promotionalNotifications'] ?? _promotionalNotifications;
+      _promotionalNotifications =
+          result['promotionalNotifications'] ?? _promotionalNotifications;
     });
     _showMessage('Notification preferences saved.');
   }
@@ -905,9 +868,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Log Out'),
-          content: const Text(
-            'Do you want to return to the login screen?',
-          ),
+          content: const Text('Do you want to return to the login screen?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -916,9 +877,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                Navigator.of(context).popUntil(
-                      (route) => route.isFirst,
-                );
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: const Text('Log Out'),
             ),
@@ -928,9 +887,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-// ---------------------------------------------------------
-// REUSABLE COMPONENTS
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // REUSABLE COMPONENTS
+  // ---------------------------------------------------------
 
   Widget _pageContainer({
     required String title,
@@ -959,14 +918,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                   const SizedBox(height: 8),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Colors.blueGrey,
-                    ),
+                    style: const TextStyle(color: Colors.blueGrey),
                   ),
-                  if (action != null) ...[
-                    const SizedBox(height: 18),
-                    action,
-                  ],
+                  if (action != null) ...[const SizedBox(height: 18), action],
                   const SizedBox(height: 22),
                   child,
                 ],
@@ -1009,10 +963,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.blueGrey,
-              height: 1.4,
-            ),
+            style: const TextStyle(color: Colors.blueGrey, height: 1.4),
           ),
         ],
       ),
@@ -1042,9 +993,8 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -1112,10 +1062,7 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
             ),
           ],
         ),
@@ -1156,11 +1103,7 @@ class _QuickAction extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: dashboardBlue,
-                size: 29,
-              ),
+              Icon(icon, color: dashboardBlue, size: 29),
               const SizedBox(height: 12),
               Text(
                 title,
@@ -1238,10 +1181,7 @@ class _BookingTile extends StatelessWidget {
   final Map<String, String> booking;
   final VoidCallback onTap;
 
-  const _BookingTile({
-    required this.booking,
-    required this.onTap,
-  });
+  const _BookingTile({required this.booking, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1259,10 +1199,7 @@ class _BookingTile extends StatelessWidget {
         leading: const CircleAvatar(
           radius: 25,
           backgroundColor: Color(0xFFEAF3FF),
-          child: Icon(
-            Icons.build_rounded,
-            color: dashboardBlue,
-          ),
+          child: Icon(Icons.build_rounded, color: dashboardBlue),
         ),
         title: Text(
           booking['service'] ?? 'Service',
@@ -1275,7 +1212,7 @@ class _BookingTile extends StatelessWidget {
           padding: const EdgeInsets.only(top: 7),
           child: Text(
             '${booking['workshop'] ?? ''}\n'
-                '${booking['date'] ?? ''} • ${booking['time'] ?? ''}',
+            '${booking['date'] ?? ''} • ${booking['time'] ?? ''}',
           ),
         ),
         isThreeLine: true,
@@ -1295,9 +1232,7 @@ class _BookingTile extends StatelessWidget {
 class _ActivityTile extends StatelessWidget {
   final Map<String, String> activity;
 
-  const _ActivityTile({
-    required this.activity,
-  });
+  const _ActivityTile({required this.activity});
 
   @override
   Widget build(BuildContext context) {
@@ -1310,16 +1245,10 @@ class _ActivityTile extends StatelessWidget {
         side: const BorderSide(color: Color(0xFFE5EAF0)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: const CircleAvatar(
           backgroundColor: Color(0xFFE3F4F1),
-          child: Icon(
-            Icons.check_circle_rounded,
-            color: Colors.teal,
-          ),
+          child: Icon(Icons.check_circle_rounded, color: Colors.teal),
         ),
         title: Text(
           activity['service'] ?? 'Service',
@@ -1332,21 +1261,17 @@ class _ActivityTile extends StatelessWidget {
           padding: const EdgeInsets.only(top: 5),
           child: Text(
             '${activity['vehicle'] ?? ''} • '
-                '${activity['status'] ?? ''}',
+            '${activity['status'] ?? ''}',
           ),
         ),
         trailing: Text(
           activity['date'] ?? '',
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.blueGrey,
-          ),
+          style: const TextStyle(fontSize: 10, color: Colors.blueGrey),
         ),
       ),
     );
   }
 }
-
 
 // ---------------------------------------------------------
 // PERSONAL INFORMATION
@@ -1433,12 +1358,24 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
           ),
           const SizedBox(height: 18),
           _buildField('Full Name', _nameController, Icons.person_outline),
-          _buildField('Email Address', _emailController, Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress),
-          _buildField('Phone Number', _phoneController, Icons.phone_outlined,
-              keyboardType: TextInputType.phone),
-          _buildField('Address', _addressController, Icons.location_on_outlined,
-              maxLines: 2),
+          _buildField(
+            'Email Address',
+            _emailController,
+            Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          _buildField(
+            'Phone Number',
+            _phoneController,
+            Icons.phone_outlined,
+            keyboardType: TextInputType.phone,
+          ),
+          _buildField(
+            'Address',
+            _addressController,
+            Icons.location_on_outlined,
+            maxLines: 2,
+          ),
           const SizedBox(height: 10),
           SizedBox(
             height: 48,
@@ -1457,12 +1394,12 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
   }
 
   Widget _buildField(
-      String label,
-      TextEditingController controller,
-      IconData icon, {
-        TextInputType keyboardType = TextInputType.text,
-        int maxLines = 1,
-      }) {
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
@@ -1508,8 +1445,7 @@ class _NotificationSettingsPage extends StatefulWidget {
       _NotificationSettingsPageState();
 }
 
-class _NotificationSettingsPageState
-    extends State<_NotificationSettingsPage> {
+class _NotificationSettingsPageState extends State<_NotificationSettingsPage> {
   late bool _bookingNotifications;
   late bool _serviceReminders;
   late bool _promotionalNotifications;
@@ -1562,21 +1498,21 @@ class _NotificationSettingsPageState
             'Confirmation, changes and cancellation updates.',
             Icons.calendar_month_outlined,
             _bookingNotifications,
-                (value) => setState(() => _bookingNotifications = value),
+            (value) => setState(() => _bookingNotifications = value),
           ),
           _switchTile(
             'Service Reminders',
             'Reminders for upcoming vehicle maintenance.',
             Icons.build_circle_outlined,
             _serviceReminders,
-                (value) => setState(() => _serviceReminders = value),
+            (value) => setState(() => _serviceReminders = value),
           ),
           _switchTile(
             'Promotions and Offers',
             'Special offers and promotional announcements.',
             Icons.local_offer_outlined,
             _promotionalNotifications,
-                (value) => setState(() => _promotionalNotifications = value),
+            (value) => setState(() => _promotionalNotifications = value),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1596,12 +1532,12 @@ class _NotificationSettingsPageState
   }
 
   Widget _switchTile(
-      String title,
-      String subtitle,
-      IconData icon,
-      bool value,
-      ValueChanged<bool> onChanged,
-      ) {
+    String title,
+    String subtitle,
+    IconData icon,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return Card(
       color: Colors.white,
       elevation: 0,
@@ -1615,7 +1551,7 @@ class _NotificationSettingsPageState
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
         value: value,
-        activeColor: dashboardBlue,
+        activeThumbColor: dashboardBlue,
         onChanged: onChanged,
       ),
     );
@@ -1740,10 +1676,7 @@ class _HelpSupportPage extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               answer,
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                height: 1.45,
-              ),
+              style: const TextStyle(color: Colors.blueGrey, height: 1.45),
             ),
           ),
         ],
@@ -1751,4 +1684,3 @@ class _HelpSupportPage extends StatelessWidget {
     );
   }
 }
-

@@ -19,11 +19,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
   String _driverName = 'Driver Account';
   String _driverEmail = 'driver@example.com';
   String _driverPhone = '0301-9876543';
-  String _licenceNumber = 'DL-123456';
-  String _licenceExpiry = '31 Dec 2027';
-  bool _tripNotifications = true;
-  bool _maintenanceNotifications = true;
-  bool _ownerNotifications = true;
+  final String _licenceNumber = 'DL-123456';
+  final String _licenceExpiry = '31 Dec 2027';
+  final bool _tripNotifications = true;
+  final bool _maintenanceNotifications = true;
+  final bool _ownerNotifications = true;
   final Set<String> _acknowledgedMaintenance = {};
 
   final Map<String, String> owner = {
@@ -118,26 +118,21 @@ class _DriverDashboardState extends State<DriverDashboard> {
       'time': '09:00 AM - 02:00 PM',
       'task': 'As Assigned by Owner',
     },
-    {
-      'day': 'Sunday',
-      'time': 'Day Off',
-      'task': 'Weekly Rest',
-    },
+    {'day': 'Sunday', 'time': 'Day Off', 'task': 'Weekly Rest'},
   ];
 
-  Map<String, String> get selectedVehicle =>
-      vehicles[_selectedVehicleIndex];
+  Map<String, String> get selectedVehicle => vehicles[_selectedVehicleIndex];
 
   int get completedTrips =>
       trips.where((t) => t['status'] == 'Completed').length;
 
-  int get upcomingTrips =>
-      trips.where((t) => t['status'] == 'Upcoming' || t['status'] == 'In Progress').length;
+  int get upcomingTrips => trips
+      .where((t) => t['status'] == 'Upcoming' || t['status'] == 'In Progress')
+      .length;
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _openNotifications() {
@@ -192,7 +187,10 @@ class _DriverDashboardState extends State<DriverDashboard> {
         children: [
           SizedBox(
             width: 62,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           Expanded(child: Text(value ?? 'Not provided')),
         ],
@@ -245,12 +243,22 @@ class _DriverDashboardState extends State<DriverDashboard> {
                   ],
                 ),
                 const Divider(height: 25),
-                _detailRow(Icons.directions_car, 'Vehicle', trip['vehicle'] ?? ''),
-                _detailRow(Icons.calendar_today, 'Date & Time',
-                    '${trip['date']} • ${trip['time']}'),
+                _detailRow(
+                  Icons.directions_car,
+                  'Vehicle',
+                  trip['vehicle'] ?? '',
+                ),
+                _detailRow(
+                  Icons.calendar_today,
+                  'Date & Time',
+                  '${trip['date']} • ${trip['time']}',
+                ),
                 _detailRow(Icons.my_location, 'Pickup', trip['pickup'] ?? ''),
-                _detailRow(Icons.location_on_outlined, 'Destination',
-                    trip['destination'] ?? ''),
+                _detailRow(
+                  Icons.location_on_outlined,
+                  'Destination',
+                  trip['destination'] ?? '',
+                ),
                 const SizedBox(height: 8),
                 if (status == 'Upcoming')
                   SizedBox(
@@ -289,7 +297,10 @@ class _DriverDashboardState extends State<DriverDashboard> {
                 else
                   const Text(
                     'This trip has been completed.',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
               ],
             ),
@@ -336,7 +347,10 @@ class _DriverDashboardState extends State<DriverDashboard> {
           else
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Acknowledged', style: TextStyle(color: Colors.green)),
+              child: Text(
+                'Acknowledged',
+                style: TextStyle(color: Colors.green),
+              ),
             ),
         ],
       ),
@@ -378,9 +392,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
       case 'Verification Status':
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => const _DriverVerificationPage(),
-          ),
+          MaterialPageRoute(builder: (_) => const _DriverVerificationPage()),
         );
         break;
       case 'Owner Contact Details':
@@ -403,7 +415,9 @@ class _DriverDashboardState extends State<DriverDashboard> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out of your driver account?'),
+        content: const Text(
+          'Are you sure you want to log out of your driver account?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -441,10 +455,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
         ),
         title: const Row(
           children: [
-            Icon(
-              Icons.directions_car_filled,
-              color: driverBlue,
-            ),
+            Icon(Icons.directions_car_filled, color: driverBlue),
             SizedBox(width: 10),
             Text(
               'Smart Auto Care',
@@ -458,19 +469,13 @@ class _DriverDashboardState extends State<DriverDashboard> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.notifications_none,
-              color: driverNavy,
-            ),
+            icon: const Icon(Icons.notifications_none, color: driverNavy),
             onPressed: _openNotifications,
           ),
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -482,10 +487,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           });
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
           NavigationDestination(
             icon: Icon(Icons.route_outlined),
             label: 'Trips',
@@ -530,15 +532,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
           const SizedBox(height: 25),
 
-          const Text(
-            "Today's Overview",
-            style: _headingStyle,
-          ),
+          const Text("Today's Overview", style: _headingStyle),
           const SizedBox(height: 14),
 
           GridView.count(
-            crossAxisCount:
-            MediaQuery.of(context).size.width > 650 ? 3 : 2,
+            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 3 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
@@ -571,8 +569,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('My Assigned Vehicles',
-                  style: _headingStyle),
+              const Text('My Assigned Vehicles', style: _headingStyle),
               TextButton(
                 onPressed: () {
                   setState(() => _selectedIndex = 2);
@@ -588,8 +585,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
           const SizedBox(height: 20),
 
-          const Text('Today’s Duty Schedule',
-              style: _headingStyle),
+          const Text('Today’s Duty Schedule', style: _headingStyle),
           const SizedBox(height: 12),
 
           _buildScheduleCard(),
@@ -599,14 +595,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
           const Text('Upcoming Trips', style: _headingStyle),
           const SizedBox(height: 12),
 
-          ...trips
-              .where((t) => t['status'] == 'Upcoming')
-              .map(_buildTripCard),
+          ...trips.where((t) => t['status'] == 'Upcoming').map(_buildTripCard),
 
           const SizedBox(height: 25),
 
-          const Text('Maintenance Reminders',
-              style: _headingStyle),
+          const Text('Maintenance Reminders', style: _headingStyle),
           const SizedBox(height: 12),
 
           ...maintenance.map(_buildMaintenanceCard),
@@ -627,11 +620,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
             const CircleAvatar(
               radius: 28,
               backgroundColor: Color(0xFFEAF3FF),
-              child: Icon(
-                Icons.person,
-                color: driverBlue,
-                size: 30,
-              ),
+              child: Icon(Icons.person, color: driverBlue, size: 30),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -640,10 +629,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                 children: [
                   const Text(
                     'Vehicle Owner',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blueGrey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.blueGrey),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -674,12 +660,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
   // STATISTICS
 
-  Widget _statCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ) {
+  Widget _statCard(String title, String value, IconData icon, Color color) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,10 +678,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           ),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.blueGrey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
         ],
       ),
@@ -743,17 +721,12 @@ class _DriverDashboardState extends State<DriverDashboard> {
                 const SizedBox(height: 4),
                 Text(
                   vehicle['registration']!,
-                  style: const TextStyle(
-                    color: Colors.blueGrey,
-                  ),
+                  style: const TextStyle(color: Colors.blueGrey),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${vehicle['year']} • ${vehicle['color']} • ${vehicle['fuel']}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.blueGrey,
-                  ),
+                  style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
                 ),
               ],
             ),
@@ -774,10 +747,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
               children: [
-                const Icon(
-                  Icons.access_time,
-                  color: driverBlue,
-                ),
+                const Icon(Icons.access_time, color: driverBlue),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -830,10 +800,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           children: [
             Row(
               children: [
-                const Icon(
-                  Icons.route,
-                  color: driverBlue,
-                ),
+                const Icon(Icons.route, color: driverBlue),
                 const SizedBox(width: 9),
                 Expanded(
                   child: Text(
@@ -849,21 +816,13 @@ class _DriverDashboardState extends State<DriverDashboard> {
               ],
             ),
             const Divider(height: 24),
-            _detailRow(
-              Icons.directions_car,
-              'Vehicle',
-              trip['vehicle']!,
-            ),
+            _detailRow(Icons.directions_car, 'Vehicle', trip['vehicle']!),
             _detailRow(
               Icons.calendar_today,
               'Date & Time',
               '${trip['date']} • ${trip['time']}',
             ),
-            _detailRow(
-              Icons.my_location,
-              'Pickup',
-              trip['pickup']!,
-            ),
+            _detailRow(Icons.my_location, 'Pickup', trip['pickup']!),
             _detailRow(
               Icons.location_on_outlined,
               'Destination',
@@ -898,7 +857,9 @@ class _DriverDashboardState extends State<DriverDashboard> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ['All', 'Upcoming', 'In Progress', 'Completed'].map((filter) {
+            children: ['All', 'Upcoming', 'In Progress', 'Completed'].map((
+              filter,
+            ) {
               final selected = _tripFilter == filter;
               return ChoiceChip(
                 label: Text(filter),
@@ -939,15 +900,12 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
           const Text(
             'Select Vehicle',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: driverNavy,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: driverNavy),
           ),
           const SizedBox(height: 10),
 
           DropdownButtonFormField<int>(
-            value: _selectedVehicleIndex,
+            initialValue: _selectedVehicleIndex,
             isExpanded: true,
             decoration: const InputDecoration(
               filled: true,
@@ -956,11 +914,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
             ),
             items: List.generate(
               vehicles.length,
-                  (index) => DropdownMenuItem(
+              (index) => DropdownMenuItem(
                 value: index,
                 child: Text(
                   '${vehicles[index]['name']} - '
-                      '${vehicles[index]['registration']}',
+                  '${vehicles[index]['registration']}',
                 ),
               ),
             ),
@@ -1007,18 +965,24 @@ class _DriverDashboardState extends State<DriverDashboard> {
             ),
           ),
           const SizedBox(height: 20),
-          _detailRow(Icons.confirmation_number_outlined,
-              'Registration', vehicle['registration']!),
-          _detailRow(Icons.calendar_today,
-              'Model Year', vehicle['year']!),
-          _detailRow(Icons.palette_outlined,
-              'Color', vehicle['color']!),
-          _detailRow(Icons.category_outlined,
-              'Vehicle Type', vehicle['type']!),
-          _detailRow(Icons.local_gas_station_outlined,
-              'Fuel Type', vehicle['fuel']!),
-          _detailRow(Icons.verified_outlined,
-              'Assignment Status', vehicle['status']!),
+          _detailRow(
+            Icons.confirmation_number_outlined,
+            'Registration',
+            vehicle['registration']!,
+          ),
+          _detailRow(Icons.calendar_today, 'Model Year', vehicle['year']!),
+          _detailRow(Icons.palette_outlined, 'Color', vehicle['color']!),
+          _detailRow(Icons.category_outlined, 'Vehicle Type', vehicle['type']!),
+          _detailRow(
+            Icons.local_gas_station_outlined,
+            'Fuel Type',
+            vehicle['fuel']!,
+          ),
+          _detailRow(
+            Icons.verified_outlined,
+            'Assignment Status',
+            vehicle['status']!,
+          ),
         ],
       ),
     );
@@ -1089,11 +1053,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           const CircleAvatar(
             radius: 48,
             backgroundColor: Color(0xFFEAF3FF),
-            child: Icon(
-              Icons.person,
-              color: driverBlue,
-              size: 55,
-            ),
+            child: Icon(Icons.person, color: driverBlue, size: 55),
           ),
           const SizedBox(height: 14),
           Text(
@@ -1105,10 +1065,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            _driverEmail,
-            style: TextStyle(color: Colors.blueGrey),
-          ),
+          Text(_driverEmail, style: TextStyle(color: Colors.blueGrey)),
           const SizedBox(height: 25),
 
           _profileOption(Icons.person_outline, 'Personal Information'),
@@ -1157,10 +1114,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
     );
   }
 
-  Widget _card({
-    required Widget child,
-    EdgeInsetsGeometry? margin,
-  }) {
+  Widget _card({required Widget child, EdgeInsetsGeometry? margin}) {
     return Container(
       width: double.infinity,
       margin: margin,
@@ -1174,11 +1128,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
     );
   }
 
-  Widget _detailRow(
-      IconData icon,
-      String label,
-      String value,
-      ) {
+  Widget _detailRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 13),
       child: Row(
@@ -1190,10 +1140,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
             width: 105,
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
             ),
           ),
           Expanded(
@@ -1221,12 +1168,9 @@ class _DriverDashboardState extends State<DriverDashboard> {
         : driverBlue;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -1240,11 +1184,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
     );
   }
 
-  Widget _emptyCard(
-      IconData icon,
-      String title,
-      String subtitle,
-      ) {
+  Widget _emptyCard(IconData icon, String title, String subtitle) {
     return _card(
       child: Column(
         children: [
@@ -1261,10 +1201,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.blueGrey,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
           ),
         ],
       ),
@@ -1294,7 +1231,8 @@ class _DriverPersonalInfoPage extends StatefulWidget {
   });
 
   @override
-  State<_DriverPersonalInfoPage> createState() => _DriverPersonalInfoPageState();
+  State<_DriverPersonalInfoPage> createState() =>
+      _DriverPersonalInfoPageState();
 }
 
 class _DriverPersonalInfoPageState extends State<_DriverPersonalInfoPage> {
@@ -1346,10 +1284,18 @@ class _DriverPersonalInfoPageState extends State<_DriverPersonalInfoPage> {
         padding: const EdgeInsets.all(20),
         children: [
           _field('Full Name', _name, Icons.person_outline),
-          _field('Email Address', _email, Icons.email_outlined,
-              type: TextInputType.emailAddress),
-          _field('Phone Number', _phone, Icons.phone_outlined,
-              type: TextInputType.phone),
+          _field(
+            'Email Address',
+            _email,
+            Icons.email_outlined,
+            type: TextInputType.emailAddress,
+          ),
+          _field(
+            'Phone Number',
+            _phone,
+            Icons.phone_outlined,
+            type: TextInputType.phone,
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: 48,
@@ -1367,8 +1313,12 @@ class _DriverPersonalInfoPageState extends State<_DriverPersonalInfoPage> {
     );
   }
 
-  Widget _field(String label, TextEditingController controller, IconData icon,
-      {TextInputType type = TextInputType.text}) {
+  Widget _field(
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    TextInputType type = TextInputType.text,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
@@ -1390,10 +1340,7 @@ class _DriverLicencePage extends StatelessWidget {
   final String licenceNumber;
   final String expiry;
 
-  const _DriverLicencePage({
-    required this.licenceNumber,
-    required this.expiry,
-  });
+  const _DriverLicencePage({required this.licenceNumber, required this.expiry});
 
   @override
   Widget build(BuildContext context) {
@@ -1439,9 +1386,18 @@ class _DriverLicencePage extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.blueGrey, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: driverNavy, fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: driverNavy,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     ),
   );
@@ -1474,7 +1430,11 @@ class _DriverVerificationPage extends StatelessWidget {
                   SizedBox(height: 12),
                   Text(
                     'Demo Verification',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: driverNavy),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: driverNavy,
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -1511,30 +1471,37 @@ class _DriverNotificationsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = <Widget>[];
     if (tripNotifications) {
-      for (final trip in trips.where((t) =>
-      t['status'] == 'Upcoming' || t['status'] == 'In Progress')) {
-        items.add(_notificationTile(
-          Icons.route,
-          'Assigned trip: ${trip['title']}',
-          '${trip['date']} • ${trip['time']}',
-        ));
+      for (final trip in trips.where(
+        (t) => t['status'] == 'Upcoming' || t['status'] == 'In Progress',
+      )) {
+        items.add(
+          _notificationTile(
+            Icons.route,
+            'Assigned trip: ${trip['title']}',
+            '${trip['date']} • ${trip['time']}',
+          ),
+        );
       }
     }
     if (maintenanceNotifications) {
       for (final item in maintenance) {
-        items.add(_notificationTile(
-          Icons.build_circle_outlined,
-          '${item['task']} reminder',
-          '${item['vehicle']} • Due ${item['date']}',
-        ));
+        items.add(
+          _notificationTile(
+            Icons.build_circle_outlined,
+            '${item['task']} reminder',
+            '${item['vehicle']} • Due ${item['date']}',
+          ),
+        );
       }
     }
     if (ownerNotifications) {
-      items.add(_notificationTile(
-        Icons.person_outline,
-        'Vehicle owner',
-        'Your assigned vehicles and duties are managed by ${'Ahmed Faisal'}.',
-      ));
+      items.add(
+        _notificationTile(
+          Icons.person_outline,
+          'Vehicle owner',
+          'Your assigned vehicles and duties are managed by ${'Ahmed Faisal'}.',
+        ),
+      );
     }
 
     return Scaffold(
@@ -1550,7 +1517,11 @@ class _DriverNotificationsPage extends StatelessWidget {
         children: [
           const Text(
             'Your Updates',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: driverNavy),
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: driverNavy,
+            ),
           ),
           const SizedBox(height: 14),
           if (items.isEmpty)
@@ -1558,7 +1529,9 @@ class _DriverNotificationsPage extends StatelessWidget {
               color: Colors.white,
               child: Padding(
                 padding: EdgeInsets.all(22),
-                child: Text('Notifications are turned off or there are no current updates.'),
+                child: Text(
+                  'Notifications are turned off or there are no current updates.',
+                ),
               ),
             )
           else
@@ -1603,19 +1576,33 @@ class _DriverHelpPage extends StatelessWidget {
         children: [
           const Text(
             'Driver Help',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: driverNavy),
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+              color: driverNavy,
+            ),
           ),
           const SizedBox(height: 14),
-          _faq('Who assigns my vehicles?',
-              'Your linked vehicle owner assigns vehicles to you. You cannot add or remove owner vehicles from the driver account.'),
-          _faq('Who assigns my trips?',
-              'Trips and duty details are assigned by your linked vehicle owner. Contact the owner if a trip detail needs to be changed.'),
-          _faq('How do I update a trip?',
-              'Open the trip details. You can mark an upcoming trip as In Progress and then mark it Completed when the journey is finished.'),
-          _faq('What should I do about maintenance reminders?',
-              'Review the vehicle and due date, acknowledge the reminder, and coordinate with the vehicle owner before arranging maintenance.'),
-          _faq('Are changes saved permanently?',
-              'This version uses local demo data. Changes reset when the app restarts. Firebase synchronization will be added later.'),
+          _faq(
+            'Who assigns my vehicles?',
+            'Your linked vehicle owner assigns vehicles to you. You cannot add or remove owner vehicles from the driver account.',
+          ),
+          _faq(
+            'Who assigns my trips?',
+            'Trips and duty details are assigned by your linked vehicle owner. Contact the owner if a trip detail needs to be changed.',
+          ),
+          _faq(
+            'How do I update a trip?',
+            'Open the trip details. You can mark an upcoming trip as In Progress and then mark it Completed when the journey is finished.',
+          ),
+          _faq(
+            'What should I do about maintenance reminders?',
+            'Review the vehicle and due date, acknowledge the reminder, and coordinate with the vehicle owner before arranging maintenance.',
+          ),
+          _faq(
+            'Are changes saved permanently?',
+            'This version uses local demo data. Changes reset when the app restarts. Firebase synchronization will be added later.',
+          ),
         ],
       ),
     );
@@ -1627,12 +1614,18 @@ class _DriverHelpPage extends StatelessWidget {
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 10),
       child: ExpansionTile(
-        title: Text(question, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          question,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(answer, style: const TextStyle(color: Colors.blueGrey, height: 1.4)),
+            child: Text(
+              answer,
+              style: const TextStyle(color: Colors.blueGrey, height: 1.4),
+            ),
           ),
         ],
       ),
