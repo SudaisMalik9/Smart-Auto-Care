@@ -155,8 +155,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     });
   }
 
-
-
   bool _isActiveBooking(Map<String, String> booking) {
     final status = (booking['status'] ?? '').toLowerCase();
     return status != 'cancelled' && status != 'completed';
