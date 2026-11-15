@@ -1,0 +1,30 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Smart Auto Care{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Smart Auto Care - Administration Portal</p>
+    </div>
+
+    <div class="dashboard-content">
+        <h2>Welcome, Administrator</h2>
+        <p>
+            Manage and monitor the Smart Auto Care platform
+            from the administration portal.
+        </p>
+
+        <div class="module-grid">
+            <div class="module-card">User Management</div>
+            <div class="module-card">Workshop Management</div>
+            <div class="module-card">Workshop Monitoring</div>
+            <div class="module-card">System Statistics</div>
+            <div class="module-card">Booking Monitoring</div>
+            <div class="module-card">Administrative Controls</div>
+        </div>
+    </div>
+</section>
+{% endblock %}
