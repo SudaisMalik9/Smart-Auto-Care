@@ -1,10 +1,18 @@
+# Smart Auto Care CI
 name: Smart Auto Care CI
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
+      - "feature/**"
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
   workflow_dispatch:
 
 permissions:
@@ -15,17 +23,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code-checks:
-    name: Code Checks
+  repository-check:
+    name: Repository Setup Check
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Check repository files
-        id: repository
+      - name: Check repository folders
         run: |
           test -f README.md
           test -f CONTRIBUTING.md
@@ -34,6 +39,15 @@ jobs:
           test -d web
           test -d database
           test -d docs
+          echo "Repository structure is correct."
+
+  flutter-checks:
+    name: Flutter Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Set up Flutter
         if: hashFiles('mobile_app/pubspec.yaml') != ''
@@ -46,64 +60,104 @@ jobs:
         working-directory: mobile_app
         run: flutter pub get
 
-      - name: Check Flutter formatting
-        id: flutter-format
+      - name: Check Dart formatting
         if: hashFiles('mobile_app/pubspec.yaml') != ''
         working-directory: mobile_app
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze Flutter code
-        id: flutter-analyze
         if: hashFiles('mobile_app/pubspec.yaml') != ''
         working-directory: mobile_app
         run: flutter analyze
 
       - name: Run Flutter tests
-        id: flutter-tests
-        if: hashFiles('mobile_app/pubspec.yaml') != '' && hashFiles('mobile_app/test/**/*_test.dart') != ''
+        if: hashFiles('mobile_app/test/**/*_test.dart') != ''
         working-directory: mobile_app
         run: flutter test
 
+  backend-checks:
+    name: Backend Python Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Set up Python
-        if: hashFiles('backend/requirements.txt', 'backend/**/*.py') != ''
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Install Python dependencies
+      - name: Install backend dependencies
         if: hashFiles('backend/requirements.txt') != ''
         working-directory: backend
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Check Python syntax
-        id: python-syntax
+      - name: Check backend Python syntax
         if: hashFiles('backend/**/*.py') != ''
         working-directory: backend
         run: python -m compileall -q .
 
-      - name: Run Python tests
-        id: python-tests
+      - name: Run backend tests
         if: hashFiles('backend/**/test_*.py', 'backend/**/*_test.py') != ''
         working-directory: backend
         run: |
-          python -m pip install pytest
+          pip install pytest
           python -m pytest
 
-      - name: Report check results
-        if: always()
+  website-checks:
+    name: Website Django Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install website dependencies
+        if: hashFiles('web/requirements.txt') != ''
+        working-directory: web
         run: |
-          {
-            echo '## Smart Auto Care CI'
-            echo '| Check | Result |'
-            echo '| --- | --- |'
-            echo '| Repository structure | ${{ steps.repository.outcome }} |'
-            echo '| Flutter formatting | ${{ steps.flutter-format.outcome }} |'
-            echo '| Flutter analysis | ${{ steps.flutter-analyze.outcome }} |'
-            echo '| Flutter tests | ${{ steps.flutter-tests.outcome }} |'
-            echo '| Python syntax | ${{ steps.python-syntax.outcome }} |'
-            echo '| Python tests | ${{ steps.python-tests.outcome }} |'
-            echo ''
-            echo 'Application checks run when their project files are present. Tests run when matching test files are present.'
-            echo 'A skipped check does not verify application code. Django settings and PostgreSQL test setup must be configured when the backend is integrated.'
-            echo 'The project lead reviews the results, approves the pull request, and merges it into main.'
-          } >> "$GITHUB_STEP_SUMMARY"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check website Python syntax
+        if: hashFiles('web/**/*.py') != ''
+        working-directory: web
+        run: python -m compileall -q .
+
+      - name: Run website Django system check
+        if: hashFiles('web/manage.py') != ''
+        working-directory: web
+        run: python manage.py check
+
+      - name: Run website tests
+        if: hashFiles('web/**/test_*.py', 'web/**/*_test.py') != ''
+        working-directory: web
+        run: |
+          pip install pytest
+          python -m pytest
+
+  report:
+    name: CI Results
+    runs-on: ubuntu-latest
+    needs:
+      - repository-check
+      - flutter-checks
+      - backend-checks
+      - website-checks
+    if: always()
+    steps:
+      - name: Show results
+        run: |
+          echo "## Smart Auto Care CI Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Repository | ${{ needs.repository-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Flutter | ${{ needs.flutter-checks.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Backend | ${{ needs.backend-checks.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Website | ${{ needs.website-checks.result }} |" >> "$GITHUB_STEP_SUMMARY"
