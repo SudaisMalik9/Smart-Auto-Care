@@ -7,3 +7,5 @@ def admin_dashboard(request):
 
 def workshop_dashboard(request):
     return render(request, "workshop/dashboard.html")
+def qr_pairing(request):
+    return render(request, "website/qr_pairing.html")
