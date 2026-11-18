@@ -1,11 +1,268 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Page</title>
+    <title>Admin Dashboard | Smart Auto Care</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f6fb;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #14213d;
+            color: white;
+            padding: 30px 20px;
+        }
+
+        .sidebar h2 {
+            font-size: 21px;
+            margin-bottom: 35px;
+        }
+
+        .sidebar p {
+            color: #aebbd0;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 13px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            color: #dce5f3;
+            text-decoration: none;
+            background: #203354;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px;
+            min-width: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .topbar h1 {
+            font-size: 27px;
+        }
+
+        .status {
+            background: #fff4d6;
+            color: #8a5a00;
+            padding: 9px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .welcome {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px #00000008;
+        }
+
+        .welcome h2 {
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 19px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #00000008;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .card strong {
+            font-size: 17px;
+            color: #2563eb;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #00000008;
+        }
+
+        .panel p {
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        .footer {
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        @media (max-width: 800px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Admin Page</h1>
+    <div class="layout">
+
+        <aside class="sidebar">
+            <h2>Smart Auto Care</h2>
+
+            <p>ADMIN PANEL</p>
+
+            <a href="#" class="nav-item active">Dashboard</a>
+            <a href="#" class="nav-item">Workshop Management</a>
+            <a href="#" class="nav-item">User Management</a>
+            <a href="#" class="nav-item">Settings</a>
+            <a href="#" class="nav-item">Logout</a>
+        </aside>
+
+        <main class="main">
+
+            <header class="topbar">
+                <h1>Admin Dashboard</h1>
+                <span class="status">Development Preview</span>
+            </header>
+
+            <section class="welcome">
+                <h2>Welcome, Administrator!</h2>
+                <p>
+                    Manage the Smart Auto Care platform from one place.
+                    Dashboard information will appear here after the
+                    shared backend API is connected.
+                </p>
+            </section>
+
+            <h2 class="section-title">Platform Overview</h2>
+
+            <section class="cards">
+                <div class="card">
+                    <h3>Total Workshops</h3>
+                    <strong>Awaiting API</strong>
+                </div>
+
+                <div class="card">
+                    <h3>Total Users</h3>
+                    <strong>Awaiting API</strong>
+                </div>
+
+                <div class="card">
+                    <h3>Platform Status</h3>
+                    <strong>Not Connected</strong>
+                </div>
+            </section>
+
+<h2 class="section-title">Dashboard Status</h2>
+
+<section class="panel">
+    <p>
+        <strong>Loading State:</strong>
+        Dashboard data will load when the backend API is connected.
+    </p>
+
+    <p>
+        <strong>Empty State:</strong>
+        No dashboard information is available yet.
+    </p>
+
+    <p>
+        <strong>Error State:</strong>
+        Backend connection errors will be displayed here.
+    </p>
+</section>
+            <h2 class="section-title">Dashboard Information</h2>
+
+            <section class="panel">
+                <p>
+                    <strong>Workshop Management:</strong>
+                    Workshop records will be loaded from the shared backend.
+                </p>
+
+                <p>
+                    <strong>User Management:</strong>
+                    User information will be displayed after API integration.
+                </p>
+
+                <p>
+                    <strong>Account Security:</strong>
+                    Admin authentication and access protection are pending
+                    backend integration.
+                </p>
+            </section>
+
+            <p class="footer">
+                Smart Auto Care &copy; 2026 | Admin Dashboard
+            </p>
+
+        </main>
+    </div>
 </body>
 </html>

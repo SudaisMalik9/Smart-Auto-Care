@@ -11,4 +11,6 @@ urlpatterns = [
     path("workshop-dashboard/", views.workshop_dashboard, name="workshop_dashboard"),
 
     path("workshop-pairing/", views.qr_pairing, name="qr_pairing"),
+
+    path("admin-login/", views.admin_login, name="admin_login"),
 ]
