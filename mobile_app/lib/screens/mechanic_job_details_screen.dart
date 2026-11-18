@@ -45,7 +45,7 @@ class _MechanicJobDetailsScreenState extends State<MechanicJobDetailsScreen> {
   late final String _bookingDate;
   late final String _workshopName;
 
-  bool _isUpdating = false;
+  final bool _isUpdating = false;
 
   final List<String> _availableStatuses = [
     'Assigned',
