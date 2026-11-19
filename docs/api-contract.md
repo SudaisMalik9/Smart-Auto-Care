@@ -136,67 +136,59 @@ Notes:
 
 
 
+
 ### 3.2 Login
 
-
-
 - Method: POST
-
 - Endpoint: /api/auth/login/
-
 - Authentication: Not required
+- Content-Type: application/json
 
+Users can log in using either their username or email address.
 
+**Option A — Username login**
 
 Request:
 
-
-
 {
-
   "username": "customer1",
-
   "password": "StrongPassword!7391"
-
 }
 
+**Option B — Email login**
 
+Request:
+
+{
+  "email": "customer@example.com",
+  "password": "StrongPassword!7391"
+}
+
+Important:
+- Provide either username or email, not both.
+- Email matching is case-insensitive.
+- Invalid credentials return HTTP 400.
+- Inactive accounts cannot log in.
 
 Success: HTTP 200
 
-
-
 Response:
 
-
-
 {
-
   "message": "Login successful.",
-
   "token": "AUTH_TOKEN",
-
   "user": {
-
     "id": 1,
-
     "username": "customer1",
-
     "email": "customer@example.com",
-
     "first_name": "Ali",
-
     "last_name": "Khan",
-
     "role": "CUSTOMER"
-
   }
-
 }
 
-
-
-Invalid credentials: HTTP 400
+Error responses:
+- HTTP 400: Missing login identifier, both identifiers supplied, invalid credentials or inactive account.
 
 
 

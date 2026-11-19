@@ -50,22 +50,55 @@ class RegistrationSerializer(serializers.ModelSerializer):
         )
 
 
+
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(
+        required=False,
+        allow_blank=False,
+    )
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=False,
+    )
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
         request = self.context.get("request")
 
+        username = attrs.get("username")
+        email = attrs.get("email")
+
+        if not username and not email:
+            raise serializers.ValidationError(
+                "Provide either username or email."
+            )
+
+        if username and email:
+            raise serializers.ValidationError(
+                "Provide username or email, not both."
+            )
+
+        if email:
+            matching_users = User.objects.filter(
+                email__iexact=email
+            )
+
+            if matching_users.count() != 1:
+                raise serializers.ValidationError(
+                    "Invalid username/email or password."
+                )
+
+            username = matching_users.first().username
+
         user = authenticate(
             request=request,
-            username=attrs["username"],
+            username=username,
             password=attrs["password"],
         )
 
         if user is None:
             raise serializers.ValidationError(
-                "Invalid username or password."
+                "Invalid username/email or password."
             )
 
         if not user.is_active:
@@ -75,6 +108,7 @@ class LoginSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
+
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
