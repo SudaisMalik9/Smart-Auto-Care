@@ -46,6 +46,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'accounts.apps.AccountsConfig',
+'workshops.apps.WorkshopsConfig',
+'staff.apps.StaffConfig',
+'customers.apps.CustomersConfig',
+'appointments.apps.AppointmentsConfig',
+'repairs.apps.RepairsConfig',
+'billing.apps.BillingConfig',
+'notifications.apps.NotificationsConfig',
 ]
 
 

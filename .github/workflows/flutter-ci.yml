@@ -1,3 +1,4 @@
+
 name: Smart Auto Care CI
 
 on:
@@ -75,7 +76,7 @@ jobs:
         if: hashFiles('backend/requirements.txt', 'backend/**/*.py') != ''
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install Python dependencies
         if: hashFiles('backend/requirements.txt') != ''
@@ -87,14 +88,6 @@ jobs:
         if: hashFiles('backend/**/*.py') != ''
         working-directory: backend
         run: python -m compileall -q .
-
-      - name: Run Python tests
-        id: python-tests
-        if: hashFiles('backend/**/test_*.py', 'backend/**/*_test.py') != ''
-        working-directory: backend
-        run: |
-          python -m pip install pytest
-          python -m pytest
 
       - name: Report check results
         if: always()
@@ -108,9 +101,7 @@ jobs:
             echo '| Flutter analysis | ${{ steps.flutter-analyze.outcome }} |'
             echo '| Flutter tests | ${{ steps.flutter-tests.outcome }} |'
             echo '| Python syntax | ${{ steps.python-syntax.outcome }} |'
-            echo '| Python tests | ${{ steps.python-tests.outcome }} |'
             echo ''
-            echo 'Application checks run when their project files are present. Tests run when matching test files are present.'
-            echo 'A skipped check does not verify application code. Django settings and PostgreSQL test setup must be configured when the backend is integrated.'
-            echo 'The project lead reviews the results, approves the pull request, and merges it into main.'
+            echo 'Django tests are executed separately by Smart Auto Care Backend CI.'
+            echo 'The project lead reviews the results and approves pull requests before merging.'
           } >> "$GITHUB_STEP_SUMMARY"

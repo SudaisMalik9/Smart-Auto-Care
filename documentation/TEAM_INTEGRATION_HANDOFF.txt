@@ -1,0 +1,366 @@
+SMART AUTO CARE - TEAM INTEGRATION HANDOFF
+============================================
+
+PROJECT:
+Smart Auto Care - Final Year Project
+
+TEAM:
+Mustafa - Website
+Shaheer - Flutter Mobile App
+Backend - Django REST Framework
+
+============================================
+1. BACKEND STATUS
+============================================
+
+The following backend test command passed:
+
+backend\.venv\Scripts\python.exe backend\manage.py test accounts customers workshops
+
+RESULT:
+45 tests passed.
+OK.
+
+Django system check:
+System check identified no issues.
+
+IMPLEMENTED API MODULES:
+- Accounts
+- Customers
+- Workshops
+
+DATABASE MODELS EXIST, BUT COMPLETE API WORKFLOWS ARE NOT READY:
+- Staff
+- Appointments
+- Repairs
+- Billing
+- Notifications
+
+============================================
+2. BACKEND CONNECTION
+============================================
+
+API prefix:
+/api/
+
+Local computer:
+http://127.0.0.1:8000
+
+Android emulator:
+http://10.0.2.2:8000
+
+Physical mobile phone:
+http://YOUR_COMPUTER_LAN_IP:8000
+
+For physical-device testing:
+- Both devices should use the same Wi-Fi.
+- Run Django using:
+  backend\.venv\Scripts\python.exe backend\manage.py runserver 0.0.0.0:8000
+- Configure ALLOWED_HOSTS correctly.
+- Allow the connection through Windows Firewall.
+
+Do not use 127.0.0.1 from a physical phone.
+
+============================================
+3. AUTHENTICATION
+============================================
+
+REGISTER:
+POST /api/auth/register/
+
+Example:
+{
+  "username": "customer1",
+  "email": "customer@example.com",
+  "first_name": "Ali",
+  "last_name": "Khan",
+  "password": "UseAValidPassword123!",
+  "password_confirm": "UseAValidPassword123!"
+}
+
+Public registration creates a CUSTOMER account.
+
+LOGIN:
+POST /api/auth/login/
+
+Example:
+{
+  "username": "customer1",
+  "password": "UseAValidPassword123!"
+}
+
+Email can also be used instead of username.
+
+LOGIN RESPONSE:
+- message
+- token
+- user
+
+USER ROLES:
+ADMIN
+WORKSHOP_OWNER
+CUSTOMER
+MECHANIC
+
+PROFILE:
+GET /api/auth/profile/
+
+LOGOUT:
+POST /api/auth/logout/
+
+AUTHENTICATION HEADER:
+Authorization: Token YOUR_TOKEN
+
+CONTENT TYPE:
+application/json
+
+============================================
+4. WORKSHOP OWNER APPLICATION
+============================================
+
+Customer application:
+POST /api/workshops/applications/
+
+View own applications:
+GET /api/workshops/applications/
+
+Admin application list:
+GET /api/workshops/admin/applications/
+
+Optional filters:
+?status=PENDING
+?status=APPROVED
+?status=REJECTED
+
+Admin review:
+PATCH /api/workshops/admin/applications/ID/review/
+
+APPROVAL BODY:
+{
+  "status": "APPROVED"
+}
+
+REJECTION BODY:
+{
+  "status": "REJECTED",
+  "admin_note": "Reason for rejection"
+}
+
+Admin approval changes the account role to WORKSHOP_OWNER.
+
+Check backend/workshops/serializers.py for exact application
+request fields before building the application form.
+
+============================================
+5. WORKSHOP MANAGEMENT
+============================================
+
+List:
+GET /api/workshops/
+
+Create:
+POST /api/workshops/
+
+Retrieve:
+GET /api/workshops/ID/
+
+Update:
+PUT /api/workshops/ID/
+
+Partial update:
+PATCH /api/workshops/ID/
+
+Deactivate:
+DELETE /api/workshops/ID/
+
+These endpoints require an authenticated WORKSHOP_OWNER.
+Owners can access only their own workshops.
+DELETE performs soft deactivation.
+
+Check backend/workshops/serializers.py for exact request fields.
+
+============================================
+6. CUSTOMER APIs
+============================================
+
+Customer profile:
+GET /api/customers/profile/
+PATCH /api/customers/profile/
+
+Customer vehicles:
+GET /api/customers/vehicles/
+POST /api/customers/vehicles/
+GET /api/customers/vehicles/ID/
+PATCH /api/customers/vehicles/ID/
+DELETE /api/customers/vehicles/ID/delete/
+
+Authentication is required.
+Vehicle records are scoped to their owning customer.
+
+Check backend/customers/serializers.py for exact vehicle fields.
+
+============================================
+7. WEBSITE TO MOBILE QR PAIRING
+============================================
+
+REQUIRED FLOW:
+
+1. Workshop Owner logs into the website.
+2. Website displays a Connect Mobile App option.
+3. Website requests a pairing code.
+4. Website displays the code as a QR image.
+5. Flutter app opens its QR scanner.
+6. Mobile app scans the website QR.
+7. Flutter sends the scanned code to the backend.
+8. Backend verifies the code.
+9. Backend returns an authentication token.
+10. Mobile app stores the token securely.
+
+A. WEBSITE GENERATES QR DATA
+
+POST /api/auth/website-pairing/generate/
+
+Requires authenticated WORKSHOP_OWNER.
+
+Header:
+Authorization: Token WEBSITE_OWNER_TOKEN
+
+No request body required.
+
+Example response:
+{
+  "message": "QR pairing code generated.",
+  "code": "ONE_TIME_SECRET_CODE",
+  "expires_at": "TIMESTAMP",
+  "expires_in_seconds": 300
+}
+
+The website must convert the returned code into a QR image.
+The backend returns QR data, not an image.
+
+B. FLUTTER SCANS QR
+
+Use a Flutter QR scanner package.
+Extract the exact code from the QR.
+
+C. FLUTTER EXCHANGES THE CODE
+
+POST /api/auth/website-pairing/exchange/
+
+Request:
+{
+  "code": "SCANNED_ONE_TIME_SECRET_CODE"
+}
+
+No Authorization header is required for this endpoint.
+
+Successful response contains:
+- message
+- token
+- user
+
+QR SECURITY:
+- Expires after 5 minutes.
+- Can only be used once.
+- Backend stores a SHA-256 hash of the code.
+- Only an active WORKSHOP_OWNER can successfully pair.
+- Invalid, expired and reused codes are rejected.
+- Never put a password or existing login token inside the QR.
+
+IMPORTANT TOKEN NOTE:
+The current implementation reuses the user's existing DRF token.
+Website and mobile share the same token.
+Logging out deletes that token for both clients.
+
+WEBSITE QR DISPLAY AND FLUTTER QR SCANNING:
+These frontend features still need to be implemented by Mustafa
+and Shaheer.
+
+============================================
+8. MUSTAFA - WEBSITE TASKS
+============================================
+
+1. Connect registration and login forms.
+2. Store authentication token appropriately.
+3. Show screens according to user role.
+4. Implement Workshop Owner application and admin approval screens.
+5. Connect workshop list and create/edit screens.
+6. Add a Connect Mobile App page.
+7. Call the QR generate endpoint.
+8. Display the returned code as a QR image.
+9. Show the 5-minute expiry.
+10. Regenerate expired QR codes.
+11. Show connection status after successful mobile pairing.
+
+============================================
+9. SHAHEER - FLUTTER TASKS
+============================================
+
+1. Connect registration and login.
+2. Store authentication token securely.
+3. Show screens according to user role.
+4. Implement QR scanning for Workshop Owners.
+5. Scan the QR displayed on the website.
+6. Send scanned code to the exchange endpoint.
+7. Store the returned token securely.
+8. Use the token in authenticated API requests.
+9. Test customer profile and vehicle APIs.
+10. Test Workshop Owner permissions.
+
+============================================
+10. INTEGRATION TEST CHECKLIST
+============================================
+
+[ ] Customer can register.
+[ ] Customer can log in.
+[ ] Customer profile is returned.
+[ ] Customer can submit Workshop Owner application.
+[ ] Admin can approve application.
+[ ] User role changes to WORKSHOP_OWNER.
+[ ] Workshop Owner can create a workshop.
+[ ] Workshop Owner can view workshops.
+[ ] Website generates QR.
+[ ] Website displays QR.
+[ ] Flutter scans website QR.
+[ ] Flutter exchanges pairing code.
+[ ] Flutter receives authentication token.
+[ ] Flutter accesses authenticated API.
+[ ] Reusing QR code is rejected.
+[ ] Expired QR code is rejected.
+[ ] CUSTOMER cannot generate pairing QR.
+
+============================================
+11. NOT YET COMPLETE
+============================================
+
+These are not complete end-to-end API workflows yet:
+
+- Staff and mechanic management
+- Appointment booking
+- Repair management
+- Invoices and payments
+- Notifications
+- Full workshop branch management
+
+Database models exist for several modules, but their
+complete API workflows are not ready.
+
+============================================
+12. BACKEND COMMANDS
+============================================
+
+System check:
+backend\.venv\Scripts\python.exe backend\manage.py check
+
+Tests:
+backend\.venv\Scripts\python.exe backend\manage.py test accounts customers workshops
+
+Start backend:
+backend\.venv\Scripts\python.exe backend\manage.py runserver
+
+For exact request fields, refer to the corresponding serializers
+in the backend repository. Do not guess field names.
+
+============================================
+END OF HANDOFF
+============================================
