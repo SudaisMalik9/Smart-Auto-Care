@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Smart Auto Care</title>
+</head>
+<body>
+    <main>
+        <h1>Smart Auto Care</h1>
+        <h2>Admin Login</h2>
+        <p>Sign in to access the Admin Dashboard.</p>
+
+        <form id="admin-login-form">
+            <div>
+                <label for="username">Email or Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter email or username"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+           <button type="submit" id="login-button" aria-live="polite">
+                Login
+           </button>
+        </form>
+
+        <p id="login-message" role="status" aria-live="polite">
+    Development Mode: Login will work after the shared backend API is ready.
+</p>
+    </main>
+<script>
+    const form = document.getElementById("admin-login-form");
+    const message = document.getElementById("login-message");
+    const button = document.getElementById("login-button");
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        if (!form.reportValidity()) {
+            return;
+        }
+
+        // Development mode: no real API request is made.
+        button.disabled = true;
+        button.textContent = "Loading...";
+        message.textContent = "Please wait. Preparing login...";
+        message.setAttribute("aria-live", "polite");
+
+        setTimeout(function() {
+            button.disabled = false;
+            button.textContent = "Login";
+
+            message.textContent =
+                "Unable to complete login. The shared backend API is not connected yet.";
+
+        }, 1000);
+    });
+</script>
+</body>
+</html>

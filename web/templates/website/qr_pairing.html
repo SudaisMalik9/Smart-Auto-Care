@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop Device Pairing | Smart Auto Care</title>
+</head>
+<body>
+
+    <main>
+        <h1>Connect Your Workshop</h1>
+
+        <p>
+            Connect your Smart Auto Care mobile app
+            with your Workshop Manager dashboard.
+        </p>
+
+        <section>
+            <h2>How to Connect</h2>
+
+            <ol>
+                <li>Open the Smart Auto Care mobile application.</li>
+                <li>Login using your Workshop Manager account.</li>
+                <li>Open the QR Pairing option in the mobile app.</li>
+                <li>Scan the QR code displayed on this website.</li>
+                <li>Wait for backend verification.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Connection Status</h2>
+
+            <div id="connection-status">
+                <h3>Waiting for QR Scan</h3>
+                <p>Waiting for pairing to begin.</p>
+            </div>
+
+            <div id="qr-display">
+                <p>QR code will appear when the pairing API is available.</p>
+            </div>
+
+            <p>
+                Development Mode: These interface states are samples only.
+                No actual authentication or device pairing is performed.
+            </p>
+        </section>
+
+        <section>
+            <h2>Development-Only Sample States</h2>
+
+            <button type="button" data-state="waiting">Waiting</button>
+            <button type="button" data-state="qr">QR Displayed</button>
+            <button type="button" data-state="connecting">Connecting</button>
+            <button type="button" data-state="connected">Connected</button>
+            <button type="button" data-state="expired">QR Expired</button>
+            <button type="button" data-state="failed">Connection Failed</button>
+
+            <button type="button" id="retry-button">Retry</button>
+        </section>
+
+    </main>
+<script src="{% static 'js/qr-pairing.js' %}"></script>
+</body>
+</html>
