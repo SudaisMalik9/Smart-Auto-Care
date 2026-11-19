@@ -82,9 +82,64 @@ class AuthenticationAPITests(APITestCase):
             format="json",
         )
 
+    def test_login_with_email_returns_token(self):
+        response = self.client.post(
+            self.login_url,
+            {
+                "email": "customer@example.com",
+                "password": "TestPassword!7391",
+            },
+            format="json",
+        )
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("token", response.data)
-        self.assertEqual(response.data["user"]["role"], "CUSTOMER")
+        self.assertEqual(
+            response.data["user"]["username"],
+            "testcustomer",
+        )
+
+    def test_login_with_email_is_case_insensitive(self):
+        response = self.client.post(
+            self.login_url,
+            {
+                "email": "CUSTOMER@EXAMPLE.COM",
+                "password": "TestPassword!7391",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_login_rejects_both_username_and_email(self):
+        response = self.client.post(
+            self.login_url,
+            {
+                "username": "testcustomer",
+                "email": "customer@example.com",
+                "password": "TestPassword!7391",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+    def test_login_rejects_invalid_credentials(self):
+        response = self.client.post(
+            self.login_url,
+            {
+                "email": "customer@example.com",
+                "password": "WrongPassword!7391",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
 
     def test_authenticated_user_can_view_profile(self):
         token = Token.objects.create(user=self.user)
