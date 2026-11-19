@@ -75,4 +75,4 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
 
       - name: Run Django authentication tests
-        run: python manage.py test accounts --verbosity 2
+        run: python manage.py test accounts customers workshops --verbosity 2
