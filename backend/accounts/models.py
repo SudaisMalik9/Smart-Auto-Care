@@ -1,7 +1,8 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-
+from datetime import timedelta
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -59,3 +60,42 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+def website_pairing_expiry():
+    return timezone.now() + timedelta(minutes=5)
+
+
+class WebsitePairingCode(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="website_pairing_codes",
+    )
+
+    code_hash = models.CharField(
+        max_length=64,
+        unique=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    expires_at = models.DateTimeField(
+        default=website_pairing_expiry,
+    )
+
+    used_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["expires_at", "used_at"],
+                name="website_pairing_exp_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Website pairing for {self.user.username}"

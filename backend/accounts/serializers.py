@@ -1,7 +1,10 @@
 
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
 from rest_framework import serializers
+
+from customers.models import CustomerProfile
 
 
 User = get_user_model()
@@ -38,17 +41,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
             })
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
         validated_data.pop("password_confirm")
-
         password = validated_data.pop("password")
 
-        return User.objects.create_user(
+        user = User.objects.create_user(
             password=password,
             role=User.Role.CUSTOMER,
             **validated_data,
         )
 
+        CustomerProfile.objects.create(user=user)
+
+        return user
 
 
 class LoginSerializer(serializers.Serializer):
@@ -108,7 +114,6 @@ class LoginSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
-
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
