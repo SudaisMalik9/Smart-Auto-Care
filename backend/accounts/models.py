@@ -70,12 +70,11 @@ class WebsitePairingCode(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="website_pairing_codes",
+        null=True,
+        blank=True,
     )
 
-    code_hash = models.CharField(
-        max_length=64,
-        unique=True,
-    )
+    code_hash = models.CharField(max_length=64, unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -83,10 +82,25 @@ class WebsitePairingCode(models.Model):
         default=website_pairing_expiry,
     )
 
-    used_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
+    scanned_at = models.DateTimeField(null=True, blank=True)
+
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    rejected_at = models.DateTimeField(null=True, blank=True)
+
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["expires_at", "used_at"],
+                name="website_pairing_exp_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Website pairing for {self.user or 'Pending'}"
 
     class Meta:
         ordering = ["-created_at"]
