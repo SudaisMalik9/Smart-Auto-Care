@@ -1,4 +1,8 @@
+
 import 'package:material_ui/material_ui.dart';
+
+import '../services/auth_service.dart';
+import 'vehicle_owner_dashboard.dart';
 
 const Color _primaryBlue = Color(0xFF1565C0);
 const Color _backgroundColor = Color(0xFFF5F7FB);
@@ -14,7 +18,9 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -22,19 +28,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-
-  String _selectedRole = 'Vehicle Owner';
-
-  final List<String> _roles = ['Vehicle Owner', 'Driver', 'Workshop'];
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  String? _validateRequired(String? value, String label) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your $label.';
+    }
+    return null;
+  }
+
+  String? _validateUsername(String? value) {
+    final username = value?.trim() ?? '';
+
+    if (username.isEmpty) {
+      return 'Please enter a username.';
+    }
+
+    if (username.length < 3) {
+      return 'Username must contain at least 3 characters.';
+    }
+
+    if (!RegExp(r'^[a-zA-Z0-9@.+_-]+$').hasMatch(username)) {
+      return 'Use letters, numbers and @ . + - _ only.';
+    }
+
+    return null;
   }
 
   String? _validateEmail(String? value) {
@@ -46,6 +76,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       return 'Please enter a valid email address.';
+    }
+
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    final phone = value?.trim() ?? '';
+
+    if (phone.isEmpty) {
+      return 'Please enter your phone number.';
+    }
+
+    final digits = phone.replaceAll(RegExp(r'[\s+()-]'), '');
+
+    if (!RegExp(r'^\d{10,15}$').hasMatch(digits)) {
+      return 'Please enter a valid phone number.';
     }
 
     return null;
@@ -63,22 +109,88 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return null;
   }
 
-  void _register() {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate() || _isLoading) {
       return;
     }
 
-    // Registration is not connected to the Django backend yet.
-    // Do not create or store an account locally.
+    setState(() {
+      _isLoading = true;
+    });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Registration is not connected yet. Please try again after backend integration.',
+    try {
+      // Create a CUSTOMER account using the existing Django API.
+      await AuthService.register(
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        password: _passwordController.text,
+        passwordConfirm: _confirmPasswordController.text,
+      );
+
+      if (!mounted) return;
+
+      // Log in immediately after successful registration.
+      await AuthService.login(
+        identifier: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      // The account already exists and is logged in.
+      // A phone update failure must not make registration appear unsuccessful.
+      String? phoneWarning;
+
+      try {
+        await AuthService.updateCustomerPhone(
+          _phoneController.text.trim(),
+        );
+      } catch (error) {
+        phoneWarning =
+            'Your account was created, but your phone number could not '
+            'be saved. You can update it later.';
+      }
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const VehicleOwnerDashboard(),
         ),
-        duration: Duration(seconds: 4),
-      ),
-    );
+        (route) => false,
+      );
+
+      if (phoneWarning != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(phoneWarning),
+            backgroundColor: Colors.orange.shade800,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+
+      final message = error.toString().replaceFirst('Exception: ', '');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   InputDecoration _inputDecoration({
@@ -92,16 +204,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFFD8DEE8)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: _primaryBlue, width: 1.5),
+        borderSide: const BorderSide(
+          color: _primaryBlue,
+          width: 1.5,
+        ),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 16,
+      ),
     );
   }
 
@@ -116,6 +236,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           color: _navyColor,
         ),
       ),
+    );
+  }
+
+  Widget _textField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required TextEditingController controller,
+    required String? Function(String?) validator,
+    TextInputType keyboardType = TextInputType.text,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _fieldLabel(label),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
+          obscureText: obscureText,
+          decoration: _inputDecoration(
+            hint: hint,
+            icon: icon,
+            suffixIcon: suffixIcon,
+          ),
+          validator: validator,
+        ),
+      ],
     );
   }
 
@@ -148,9 +299,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       size: 58,
                       color: _primaryBlue,
                     ),
-
                     const SizedBox(height: 16),
-
                     const Text(
                       'Join Smart Auto Care',
                       textAlign: TextAlign.center,
@@ -160,172 +309,99 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         color: _navyColor,
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     const Text(
-                      'Create your account to get started.',
+                      'Create your Vehicle Owner account to get started.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.blueGrey),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.blueGrey,
+                      ),
                     ),
-
                     const SizedBox(height: 30),
 
-                    // FULL NAME
-                    _fieldLabel('Full Name'),
-
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: _inputDecoration(
-                        hint: 'Enter your full name',
-                        icon: Icons.person_outline,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your full name.';
-                        }
-
-                        if (value.trim().length < 3) {
-                          return 'Name must contain at least 3 characters.';
-                        }
-
-                        return null;
-                      },
+                    _textField(
+                      label: 'Username',
+                      hint: 'Choose a username',
+                      icon: Icons.alternate_email,
+                      controller: _usernameController,
+                      validator: _validateUsername,
                     ),
-
                     const SizedBox(height: 18),
 
-                    // EMAIL
-                    _fieldLabel('Email Address'),
+                    _textField(
+                      label: 'First Name',
+                      hint: 'Enter your first name',
+                      icon: Icons.person_outline,
+                      controller: _firstNameController,
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) =>
+                          _validateRequired(value, 'first name'),
+                    ),
+                    const SizedBox(height: 18),
 
-                    TextFormField(
+                    _textField(
+                      label: 'Last Name',
+                      hint: 'Enter your last name',
+                      icon: Icons.person_outline,
+                      controller: _lastNameController,
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) =>
+                          _validateRequired(value, 'last name'),
+                    ),
+                    const SizedBox(height: 18),
+
+                    _textField(
+                      label: 'Email Address',
+                      hint: 'Enter your email address',
+                      icon: Icons.email_outlined,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: _inputDecoration(
-                        hint: 'Enter your email address',
-                        icon: Icons.email_outlined,
-                      ),
                       validator: _validateEmail,
                     ),
-
                     const SizedBox(height: 18),
 
-                    // PHONE
-                    _fieldLabel('Phone Number'),
-
-                    TextFormField(
+                    _textField(
+                      label: 'Phone Number',
+                      hint: 'Enter your phone number',
+                      icon: Icons.phone_outlined,
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      decoration: _inputDecoration(
-                        hint: 'Enter your phone number',
-                        icon: Icons.phone_outlined,
-                      ),
-                      validator: (value) {
-                        final phone = value?.trim() ?? '';
-
-                        if (phone.isEmpty) {
-                          return 'Please enter your phone number.';
-                        }
-
-                        final digits = phone.replaceAll(
-                          RegExp(r'[\s+()-]'),
-                          '',
-                        );
-
-                        if (!RegExp(r'^\d{10,15}$').hasMatch(digits)) {
-                          return 'Please enter a valid phone number.';
-                        }
-
-                        return null;
-                      },
+                      validator: _validatePhone,
                     ),
-
                     const SizedBox(height: 18),
 
-                    // ROLE
-                    _fieldLabel('Register As'),
-
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedRole,
-                      isExpanded: true,
-                      decoration: _inputDecoration(
-                        hint: 'Select your role',
-                        icon: Icons.work_outline,
-                      ),
-                      items: _roles.map((role) {
-                        return DropdownMenuItem<String>(
-                          value: role,
-                          child: Text(role),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedRole = value;
-                          });
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // PASSWORD
-                    _fieldLabel('Password'),
-
-                    TextFormField(
+                    _textField(
+                      label: 'Password',
+                      hint: 'Create a password',
+                      icon: Icons.lock_outline,
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      decoration: _inputDecoration(
-                        hint: 'Create a password',
-                        icon: Icons.lock_outline,
-                        suffixIcon: IconButton(
-                          tooltip: _obscurePassword
-                              ? 'Show password'
-                              : 'Hide password',
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
                       validator: _validatePassword,
+                      suffixIcon: IconButton(
+                        tooltip: _obscurePassword
+                            ? 'Show password'
+                            : 'Hide password',
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
-
                     const SizedBox(height: 18),
 
-                    // CONFIRM PASSWORD
-                    _fieldLabel('Confirm Password'),
-
-                    TextFormField(
+                    _textField(
+                      label: 'Confirm Password',
+                      hint: 'Re-enter your password',
+                      icon: Icons.lock_outline,
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
-                      decoration: _inputDecoration(
-                        hint: 'Re-enter your password',
-                        icon: Icons.lock_outline,
-                        suffixIcon: IconButton(
-                          tooltip: _obscureConfirmPassword
-                              ? 'Show password'
-                              : 'Hide password',
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
-                            });
-                          },
-                        ),
-                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please confirm your password.';
@@ -337,15 +413,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                         return null;
                       },
+                      suffixIcon: IconButton(
+                        tooltip: _obscureConfirmPassword
+                            ? 'Show password'
+                            : 'Hide password',
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword =
+                                !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                     ),
-
                     const SizedBox(height: 28),
 
-                    // REGISTER BUTTON
                     SizedBox(
                       height: 54,
                       child: ElevatedButton(
-                        onPressed: _register,
+                        onPressed: _isLoading ? null : _register,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _primaryBlue,
                           foregroundColor: Colors.white,
@@ -354,19 +444,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'Create Account',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 23,
+                                width: 23,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : const Text(
+                                'Create Account',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
 
-                    // LOGIN NAVIGATION
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -377,9 +474,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () => Navigator.pop(context),
                           child: const Text('Login'),
                         ),
                       ],

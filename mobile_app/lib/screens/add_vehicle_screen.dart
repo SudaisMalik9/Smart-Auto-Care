@@ -1,4 +1,7 @@
+
 import 'package:material_ui/material_ui.dart';
+
+import '../services/customer_service.dart';
 
 const Color vehicleBlue = Color(0xFF1565C0);
 const Color vehicleNavy = Color(0xFF102A43);
@@ -25,6 +28,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   String _fuelType = 'Petrol';
   String _transmission = 'Automatic';
 
+  bool _isSaving = false;
+
   final List<int> _years = List.generate(
     36,
     (index) => DateTime.now().year + 1 - index,
@@ -40,31 +45,65 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     super.dispose();
   }
 
-  void _saveVehicle() {
+  Future<void> _saveVehicle() async {
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (_selectedYear == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select the manufacturing year.')),
+        const SnackBar(
+          content: Text('Please select the manufacturing year.'),
+        ),
       );
       return;
     }
 
-    final vehicle = <String, dynamic>{
-      'registrationNumber': _registrationController.text.trim().toUpperCase(),
-      'make': _makeController.text.trim(),
-      'model': _modelController.text.trim(),
-      'year': _selectedYear,
-      'type': _vehicleType,
-      'fuelType': _fuelType,
-      'transmission': _transmission,
-      'mileage': int.parse(_mileageController.text.trim()),
-      'color': _colorController.text.trim(),
-    };
+    setState(() {
+      _isSaving = true;
+    });
 
-    Navigator.pop(context, vehicle);
+    try {
+      // Save the vehicle through the Django customer API.
+      final vehicle = await CustomerService.addVehicle(
+        make: _makeController.text.trim(),
+        model: _modelController.text.trim(),
+        year: _selectedYear!,
+        registrationNumber:
+            _registrationController.text.trim().toUpperCase(),
+        color: _colorController.text.trim(),
+        fuelType: _fuelType,
+        transmission: _transmission,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vehicle saved successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Return the actual database record to the dashboard.
+      Navigator.pop(context, vehicle);
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to save vehicle: $error'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   @override
@@ -77,11 +116,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: vehicleNavy),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
         ),
         title: const Text(
           'Add Vehicle',
-          style: TextStyle(color: vehicleNavy, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: vehicleNavy,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SafeArea(
@@ -100,7 +142,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                          colors: [
+                            Color(0xFF1565C0),
+                            Color(0xFF42A5F5),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(22),
                       ),
@@ -316,11 +361,20 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     SizedBox(
                       height: 55,
                       child: ElevatedButton.icon(
-                        onPressed: _saveVehicle,
-                        icon: const Icon(Icons.save_outlined),
-                        label: const Text(
-                          'Save Vehicle',
-                          style: TextStyle(
+                        onPressed: _isSaving ? null : _saveVehicle,
+                        icon: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(
+                          _isSaving ? 'Saving Vehicle...' : 'Save Vehicle',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -338,7 +392,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     const SizedBox(height: 12),
 
                     OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _isSaving
+                          ? null
+                          : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: vehicleBlue,
                         minimumSize: const Size.fromHeight(50),
@@ -353,10 +409,15 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     const SizedBox(height: 20),
 
                     const Text(
-                      'Your vehicle details are currently stored '
-                      'temporarily during this demo.',
+                      'Vehicle details are saved to your customer account. '
+                      'Vehicle type and mileage are not yet stored by '
+                      'the current backend.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 12,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
@@ -396,7 +457,11 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           ? TextCapitalization.characters
           : TextCapitalization.words,
       keyboardType: numberOnly ? TextInputType.number : TextInputType.text,
-      decoration: _decoration(label: label, hint: hint, icon: icon),
+      decoration: _decoration(
+        label: label,
+        hint: hint,
+        icon: icon,
+      ),
       validator: (value) {
         final text = value?.trim() ?? '';
 
@@ -428,9 +493,16 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     return DropdownButtonFormField<T>(
       initialValue: value,
       isExpanded: true,
-      decoration: _decoration(label: label, hint: 'Select $label', icon: icon),
+      decoration: _decoration(
+        label: label,
+        hint: 'Select $label',
+        icon: icon,
+      ),
       items: items.map((item) {
-        return DropdownMenuItem<T>(value: item, child: Text(itemLabel(item)));
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(itemLabel(item)),
+        );
       }).toList(),
       onChanged: onChanged,
       validator: (selected) {
@@ -453,7 +525,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       prefixIcon: Icon(icon, color: vehicleBlue),
       filled: true,
       fillColor: const Color(0xFFFAFBFD),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 15,
+        vertical: 17,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
         borderSide: const BorderSide(color: Color(0xFFD8E0E9)),
@@ -464,7 +539,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
-        borderSide: const BorderSide(color: vehicleBlue, width: 1.5),
+        borderSide: const BorderSide(
+          color: vehicleBlue,
+          width: 1.5,
+        ),
       ),
     );
   }

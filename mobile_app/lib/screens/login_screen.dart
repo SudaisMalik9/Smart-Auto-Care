@@ -1,7 +1,8 @@
+
 import 'package:material_ui/material_ui.dart';
 
+import '../services/auth_service.dart';
 import 'vehicle_owner_dashboard.dart';
-import 'driver_dashboard.dart';
 import 'workshop_dashboard.dart';
 import 'admin_dashboard.dart';
 import 'registration_screen.dart';
@@ -24,14 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
-  String _selectedRole = 'Vehicle Owner';
-
-  final List<String> _roles = [
-    'Vehicle Owner',
-    'Driver',
-    'Workshop',
-    'Administrator',
-  ];
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -40,51 +34,103 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // LOGIN FUNCTION
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate() || _isLoading) {
+      return;
+    }
 
-  void _login() {
-    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _isLoading = true;
+    });
 
-    // Front-end demonstration only.
-    // Real authentication will be connected with the shared
-    // Django backend after the API contract is provided.
+    try {
+      final user = await AuthService.login(
+        identifier: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    if (_selectedRole == 'Vehicle Owner') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const VehicleOwnerDashboard()),
+      if (!mounted) return;
+
+      final role = user['role']?.toString().toUpperCase();
+
+      switch (role) {
+        case 'CUSTOMER':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const VehicleOwnerDashboard(),
+            ),
+          );
+          break;
+
+        case 'WORKSHOP_OWNER':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WorkshopDashboard(),
+            ),
+          );
+          break;
+
+        case 'ADMIN':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AdminDashboard(),
+            ),
+          );
+          break;
+
+        case 'MECHANIC':
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Login successful. Mechanic dashboard integration '
+                'is not part of the current mobile integration stage.',
+              ),
+            ),
+          );
+          break;
+
+        default:
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Your account role is not supported yet: $role',
+              ),
+            ),
+          );
+      }
+    } catch (error) {
+      if (!mounted) return;
+
+      final message = error.toString().replaceFirst('Exception: ', '');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade700,
+        ),
       );
-    } else if (_selectedRole == 'Driver') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DriverDashboard()),
-      );
-    } else if (_selectedRole == 'Workshop') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const WorkshopDashboard()),
-      );
-    } else if (_selectedRole == 'Administrator') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const AdminDashboard()),
-      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-
-  // FORGOT PASSWORD NAVIGATION
 
   void _forgotPassword() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ForgotPasswordScreen(initialEmail: _emailController.text.trim()),
+        builder: (context) => ForgotPasswordScreen(
+          initialEmail: _emailController.text.trim(),
+        ),
       ),
     );
   }
-
-  // LOGIN SCREEN UI
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +149,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 20),
 
-                    // APP BRANDING
                     const Icon(
                       Icons.directions_car_filled_rounded,
                       size: 62,
@@ -127,7 +172,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Your car, our responsibility',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
                     ),
 
                     const SizedBox(height: 42),
@@ -147,14 +195,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Log in to manage your vehicle and services.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
                     ),
 
                     const SizedBox(height: 28),
 
-                    // ROLE SELECTION
                     const Text(
-                      'Login as',
+                      'Email or Username',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
@@ -163,10 +213,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 8),
 
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedRole,
-                      isExpanded: true,
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
+                        hintText: 'Enter your email or username',
                         prefixIcon: const Icon(Icons.person_outline_rounded),
                         filled: true,
                         fillColor: Colors.white,
@@ -180,62 +232,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      items: _roles.map((role) {
-                        return DropdownMenuItem<String>(
-                          value: role,
-                          child: Text(role),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedRole = value;
-                          });
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // EMAIL FIELD
-                    const Text(
-                      'Email Address',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        hintText: 'Enter your email address',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFD8DEE8),
-                          ),
-                        ),
-                      ),
                       validator: (value) {
-                        final email = value?.trim() ?? '';
-
-                        if (email.isEmpty) {
-                          return 'Please enter your email address.';
-                        }
-
-                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                            .hasMatch(email)) {
-                          return 'Please enter a valid email address.';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your email or username.';
                         }
 
                         return null;
@@ -244,7 +243,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 20),
 
-                    // PASSWORD FIELD
                     const Text(
                       'Password',
                       style: TextStyle(
@@ -258,6 +256,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _login(),
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
                         prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -293,30 +293,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           return 'Please enter your password.';
                         }
 
-                        if (value.length < 6) {
-                          return 'Password must contain at least 6 characters.';
-                        }
-
                         return null;
                       },
                     ),
 
-                    // FORGOT PASSWORD
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: _forgotPassword,
+                        onPressed: _isLoading ? null : _forgotPassword,
                         child: const Text('Forgot Password?'),
                       ),
                     ),
 
                     const SizedBox(height: 8),
 
-                    // LOGIN BUTTON
                     SizedBox(
                       height: 54,
                       child: ElevatedButton(
-                        onPressed: _login,
+                        onPressed: _isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryBlue,
                           foregroundColor: Colors.white,
@@ -325,19 +319,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 23,
+                                width: 23,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
 
                     const SizedBox(height: 22),
 
-                    // CREATE ACCOUNT
                     Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
@@ -347,15 +349,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(color: Colors.black87),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const RegistrationScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const RegistrationScreen(),
+                                    ),
+                                  );
+                                },
                           child: const Text('Create Account'),
                         ),
                       ],
@@ -366,7 +370,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Secure vehicle care, all in one place.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 12,
+                      ),
                     ),
 
                     const SizedBox(height: 20),
