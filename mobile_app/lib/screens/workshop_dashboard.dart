@@ -19,7 +19,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
   int _selectedIndex = 0;
 
   bool _isLoading = true;
-  bool _isSaving = false;
   String? _error;
 
   List<Map<String, dynamic>> workshops = [];
@@ -251,8 +250,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     }
 
     try {
-      setState(() => _isSaving = true);
-
       await WorkshopService.createWorkshop(
         name: name.text.trim(),
         description: description.text.trim(),
@@ -269,7 +266,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       description.dispose();
       email.dispose();
       phone.dispose();
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -352,8 +348,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     }
 
     try {
-      setState(() => _isSaving = true);
-
       await WorkshopService.createBranch(
         workshopId,
         name: name.text.trim(),
@@ -373,7 +367,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       city.dispose();
       phone.dispose();
       email.dispose();
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -440,7 +433,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
-                  value: departmentId,
+                  initialValue: departmentId,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Department (Optional)',
@@ -503,8 +496,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     }
 
     try {
-      setState(() => _isSaving = true);
-
       if (service == null) {
         await WorkshopService.createService(
           branchId,
@@ -534,7 +525,6 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       price.dispose();
       duration.dispose();
       description.dispose();
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -1029,7 +1019,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           const Text('Select Workshop', style: _headingStyle),
           const SizedBox(height: 10),
           DropdownButtonFormField<int>(
-            value: _id(selectedWorkshop!),
+            initialValue: _id(selectedWorkshop!),
             isExpanded: true,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
@@ -1068,7 +1058,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             )
           else
             DropdownButtonFormField<int>(
-              value: _id(selectedBranch!),
+              initialValue: _id(selectedBranch!),
               isExpanded: true,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -1270,7 +1260,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                   ),
                 ),
                 Text(
-                  '${service['estimated_duration_minutes'] ?? '-'} minutes • $departmentName',
+                  '${service['estimated_duration_minutes'] ?? '-'} minutes â€¢ $departmentName',
                   style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
                 ),
               ],
