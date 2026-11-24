@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import 'add_vehicle_screen.dart';
 import 'find_workshop_screen.dart';
 import 'book_service_screen.dart';
+import '../services/customer_service.dart';
+import '../services/auth_service.dart';
 
 const Color dashboardBlue = Color(0xFF1565C0);
 const Color dashboardNavy = Color(0xFF102A43);
@@ -18,65 +20,97 @@ class VehicleOwnerDashboard extends StatefulWidget {
 class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   int _selectedIndex = 0;
 
-  // Temporary profile data. This will be connected to Firebase later.
   String _ownerName = 'Vehicle Owner';
-  String _ownerEmail = 'owner@example.com';
-  String _ownerPhone = '+92 300 1234567';
-  String _ownerAddress = 'Islamabad, Pakistan';
+  String _ownerEmail = '';
+  String _ownerPhone = '';
+  String _ownerAddress = '';
+  String _ownerCity = '';
+
+  bool _isLoadingProfile = true;
+  bool _isLoadingVehicles = true;
+  bool _isLoggingOut = false;
+
   bool _bookingNotifications = true;
   bool _serviceReminders = true;
   bool _promotionalNotifications = false;
 
-  // Temporary demo data. Firebase will be integrated later.
-  final List<Map<String, dynamic>> _vehicles = [
-    {
-      'registrationNumber': 'ABC-123',
-      'make': 'Honda',
-      'model': 'Civic',
-      'year': 2022,
-      'type': 'Car',
-      'fuelType': 'Petrol',
-      'transmission': 'Automatic',
-      'mileage': 45000,
-      'color': 'White',
-    },
-    {
-      'registrationNumber': 'XYZ-456',
-      'make': 'Toyota',
-      'model': 'Corolla',
-      'year': 2021,
-      'type': 'Car',
-      'fuelType': 'Petrol',
-      'transmission': 'Automatic',
-      'mileage': 60000,
-      'color': 'Silver',
-    },
-  ];
+  List<Map<String, dynamic>> _vehicles = [];
 
-  final List<Map<String, String>> _bookings = [
-    {
-      'service': 'General Maintenance',
-      'workshop': 'Demo Workshop',
-      'date': '30 Oct 2026',
-      'time': '10:00 AM',
-      'status': 'Upcoming',
-    },
-  ];
+  // Booking and service-history backend integration is not implemented yet.
+  // Do not display fabricated records.
+  final List<Map<String, String>> _bookings = [];
+  final List<Map<String, String>> _activities = [];
 
-  final List<Map<String, String>> _activities = [
-    {
-      'service': 'Oil Change',
-      'vehicle': 'Honda Civic',
-      'date': '15 Oct 2026',
-      'status': 'Completed',
-    },
-    {
-      'service': 'General Inspection',
-      'vehicle': 'Toyota Corolla',
-      'date': '02 Oct 2026',
-      'status': 'Completed',
-    },
-  ];
+  final Set<int> _deletingVehicleIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomerData();
+  }
+
+  Future<void> _loadCustomerData() async {
+    await Future.wait([_loadCustomerProfile(), _loadCustomerVehicles()]);
+  }
+
+  Future<void> _loadCustomerProfile() async {
+    try {
+      final profile = await CustomerService.getCustomerProfile();
+
+      final firstName = profile['first_name']?.toString() ?? '';
+      final lastName = profile['last_name']?.toString() ?? '';
+      final username = profile['username']?.toString() ?? '';
+      final fullName = '$firstName $lastName'.trim();
+
+      if (!mounted) return;
+
+      setState(() {
+        _ownerName = fullName.isNotEmpty ? fullName : username;
+        _ownerEmail = profile['email']?.toString() ?? '';
+        _ownerPhone = profile['phone']?.toString() ?? '';
+        _ownerAddress = profile['address']?.toString() ?? '';
+        _ownerCity = profile['city']?.toString() ?? '';
+        _isLoadingProfile = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() => _isLoadingProfile = false);
+      _showMessage('Could not load customer profile: $error');
+    }
+  }
+
+  Future<void> _loadCustomerVehicles() async {
+    try {
+      final vehicles = await CustomerService.getVehicles();
+
+      if (!mounted) return;
+
+      setState(() {
+        _vehicles = vehicles.map((vehicle) {
+          return {
+            'id': vehicle['id'],
+            'registrationNumber': vehicle['registration_number'] ?? '',
+            'make': vehicle['make'] ?? '',
+            'model': vehicle['model'] ?? '',
+            'year': vehicle['year'] ?? '',
+            'color': vehicle['color'] ?? '',
+            'fuelType': vehicle['fuel_type'] ?? '',
+            'transmission': vehicle['transmission'] ?? '',
+            'nickname': vehicle['nickname'] ?? '',
+            'notes': vehicle['notes'] ?? '',
+          };
+        }).toList();
+
+        _isLoadingVehicles = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() => _isLoadingVehicles = false);
+      _showMessage('Could not load vehicles: $error');
+    }
+  }
 
   Future<void> _openAddVehicle() async {
     final vehicle = await Navigator.push<Map<String, dynamic>>(
@@ -86,20 +120,13 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
 
     if (!mounted || vehicle == null) return;
 
-    setState(() {
-      _vehicles.add(vehicle);
-    });
+    setState(() => _isLoadingVehicles = true);
+    await _loadCustomerVehicles();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${vehicle['make']} ${vehicle['model']} added successfully!',
-        ),
-      ),
-    );
+    if (!mounted) return;
+    _showMessage('Vehicle list updated.');
   }
 
-  // Find Workshop: opens workshop discovery and receives confirmed booking.
   Future<void> _openFindWorkshop() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -108,20 +135,18 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
 
     if (!mounted || result == null) return;
 
+    // This is currently a local/session-only booking result.
     final booking = <String, String>{};
-
     result.forEach((key, value) {
       booking[key] = value?.toString() ?? '';
     });
 
-    setState(() {
-      _bookings.insert(0, booking);
-    });
-
-    _showMessage('Your service booking has been added successfully!');
+    setState(() => _bookings.insert(0, booking));
+    _showMessage(
+      'Booking details received. Permanent booking storage is not connected yet.',
+    );
   }
 
-  // Book Service: opens the booking form and adds the returned booking.
   Future<void> _openBookService() async {
     final result = await Navigator.push<dynamic>(
       context,
@@ -130,29 +155,24 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
 
     if (!mounted || result == null || result is! Map) return;
 
+    // This is currently a local/session-only booking result.
     final booking = <String, String>{};
-
     result.forEach((key, value) {
       booking[key.toString()] = value?.toString() ?? '';
     });
 
-    setState(() {
-      _bookings.insert(0, booking);
-    });
-
-    _showMessage('Your service booking has been added successfully!');
+    setState(() => _bookings.insert(0, booking));
+    _showMessage(
+      'Booking details received. Permanent booking storage is not connected yet.',
+    );
   }
 
   void _openVehicles() {
-    setState(() {
-      _selectedIndex = 1;
-    });
+    setState(() => _selectedIndex = 1);
   }
 
   void _openBookings() {
-    setState(() {
-      _selectedIndex = 2;
-    });
+    setState(() => _selectedIndex = 2);
   }
 
   bool _isActiveBooking(Map<String, String> booking) {
@@ -179,6 +199,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       builder: (dialogContext) {
         final status = booking['status'] ?? 'Upcoming';
         final canCancel = _isActiveBooking(booking);
+
         return AlertDialog(
           title: const Text('Booking Details'),
           content: Column(
@@ -190,6 +211,11 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               _detailRow('Date', booking['date']),
               _detailRow('Time', booking['time']),
               _detailRow('Status', status),
+              const SizedBox(height: 8),
+              const Text(
+                'This booking is not yet stored permanently on the server.',
+                style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+              ),
             ],
           ),
           actions: [
@@ -200,11 +226,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             if (canCancel)
               TextButton(
                 onPressed: () {
-                  setState(() {
-                    booking['status'] = 'Cancelled';
-                  });
+                  setState(() => booking['status'] = 'Cancelled');
                   Navigator.pop(dialogContext);
-                  _showMessage('Booking cancelled.');
+                  _showMessage('Booking cancelled in this app session.');
                 },
                 child: const Text(
                   'Cancel Booking',
@@ -282,9 +306,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               Icons.notifications_none_rounded,
               color: dashboardNavy,
             ),
-            onPressed: () {
-              _showMessage('No new notifications.');
-            },
+            onPressed: () => _showMessage('No new notifications.'),
           ),
           const SizedBox(width: 8),
         ],
@@ -297,9 +319,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         selectedIndex: _selectedIndex,
         indicatorColor: const Color(0xFFE7F0FF),
         onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          setState(() => _selectedIndex = index);
         },
         destinations: const [
           NavigationDestination(
@@ -323,9 +343,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-  // ---------------------------------------------------------
   // HOME DASHBOARD
-  // ---------------------------------------------------------
 
   Widget _buildHome() {
     return LayoutBuilder(
@@ -340,9 +358,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Hello, Vehicle Owner! 👋',
-                    style: TextStyle(
+                  Text(
+                    'Hello, ${_ownerName == 'Vehicle Owner' ? 'Vehicle Owner' : _ownerName}!',
+                    style: const TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                       color: dashboardNavy,
@@ -354,11 +372,8 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                   ),
                   const SizedBox(height: 26),
-
                   _buildBanner(),
-
                   const SizedBox(height: 28),
-
                   const Text(
                     'Overview',
                     style: TextStyle(
@@ -368,7 +383,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 15),
-
                   GridView.count(
                     crossAxisCount: wide ? 3 : 1,
                     shrinkWrap: true,
@@ -380,7 +394,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                       _StatCard(
                         icon: Icons.directions_car_rounded,
                         label: 'My Vehicles',
-                        value: '${_vehicles.length}',
+                        value: _isLoadingVehicles
+                            ? '...'
+                            : '${_vehicles.length}',
                         subtitle: 'Registered vehicles',
                         color: dashboardBlue,
                         onTap: _openVehicles,
@@ -389,7 +405,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                         icon: Icons.calendar_month_rounded,
                         label: 'Upcoming',
                         value: '$_activeBookingCount',
-                        subtitle: 'Active service bookings',
+                        subtitle: 'Session bookings',
                         color: Colors.teal,
                         onTap: _openBookings,
                       ),
@@ -397,15 +413,13 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                         icon: Icons.check_circle_outline_rounded,
                         label: 'Completed',
                         value: '${_activities.length}',
-                        subtitle: 'Services completed',
+                        subtitle: 'Recorded services',
                         color: Colors.deepPurple,
                         onTap: _openServiceHistory,
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 28),
-
                   const Text(
                     'Quick Actions',
                     style: TextStyle(
@@ -415,7 +429,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 15),
-
                   GridView.count(
                     crossAxisCount: wide ? 4 : 2,
                     shrinkWrap: true,
@@ -429,21 +442,16 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                         title: 'Add Vehicle',
                         onTap: _openAddVehicle,
                       ),
-
-                      // FIND WORKSHOP BUTTON
                       _QuickAction(
                         icon: Icons.search_rounded,
                         title: 'Find Workshop',
                         onTap: _openFindWorkshop,
                       ),
-
-                      // BOOK SERVICE BUTTON
                       _QuickAction(
                         icon: Icons.event_available_outlined,
                         title: 'Book Service',
                         onTap: _openBookService,
                       ),
-
                       _QuickAction(
                         icon: Icons.history_rounded,
                         title: 'Service History',
@@ -451,9 +459,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 28),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -472,7 +478,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     ],
                   ),
                   const SizedBox(height: 10),
-
                   if (_bookings.isEmpty)
                     _emptyCard(
                       icon: Icons.calendar_month_outlined,
@@ -488,9 +493,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                             onTap: () => _showBookingDetails(booking),
                           ),
                         ),
-
                   const SizedBox(height: 26),
-
                   const Text(
                     'Recent Activity',
                     style: TextStyle(
@@ -500,7 +503,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
                   if (_activities.isEmpty)
                     _emptyCard(
                       icon: Icons.history_rounded,
@@ -511,7 +513,6 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     ..._activities
                         .take(4)
                         .map((activity) => _ActivityTile(activity: activity)),
-
                   const SizedBox(height: 24),
                 ],
               ),
@@ -562,9 +563,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-  // ---------------------------------------------------------
   // VEHICLES PAGE
-  // ---------------------------------------------------------
 
   Widget _buildVehiclesPage() {
     return _pageContainer(
@@ -575,7 +574,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         icon: const Icon(Icons.add),
         label: const Text('Add Vehicle'),
       ),
-      child: _vehicles.isEmpty
+      child: _isLoadingVehicles
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(30),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : _vehicles.isEmpty
           ? _emptyCard(
               icon: Icons.directions_car_outlined,
               title: 'No vehicles registered',
@@ -583,6 +589,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             )
           : Column(
               children: _vehicles.map((vehicle) {
+                final year = vehicle['year']?.toString() ?? '';
+                final color = vehicle['color']?.toString() ?? '';
+                final fuel = vehicle['fuelType']?.toString() ?? '';
+                final transmission = vehicle['transmission']?.toString() ?? '';
+                final id = int.tryParse(vehicle['id']?.toString() ?? '');
+                final isDeleting =
+                    id != null && _deletingVehicleIds.contains(id);
+
                 return Card(
                   color: Colors.white,
                   elevation: 0,
@@ -617,21 +631,27 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         '${vehicle['registrationNumber']}\n'
-                        '${vehicle['year']} • ${vehicle['color']} • '
-                        '${vehicle['mileage']} km',
+                        '$year • $color\n'
+                        '$fuel • $transmission',
                       ),
                     ),
                     isThreeLine: true,
-                    trailing: IconButton(
-                      tooltip: 'Delete vehicle',
-                      icon: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Colors.redAccent,
-                      ),
-                      onPressed: () {
-                        _confirmDeleteVehicle(vehicle);
-                      },
-                    ),
+                    trailing: isDeleting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : IconButton(
+                            tooltip: 'Delete vehicle',
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: id == null
+                                ? null
+                                : () => _confirmDeleteVehicle(vehicle),
+                          ),
                   ),
                 );
               }).toList(),
@@ -640,13 +660,21 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   }
 
   void _confirmDeleteVehicle(Map<String, dynamic> vehicle) {
+    final vehicleId = int.tryParse(vehicle['id']?.toString() ?? '');
+
+    if (vehicleId == null) {
+      _showMessage('Invalid vehicle ID. Please refresh the vehicle list.');
+      return;
+    }
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Remove Vehicle?'),
           content: Text(
-            'Do you want to remove ${vehicle['make']} ${vehicle['model']}?',
+            'Do you want to remove '
+            '${vehicle['make']} ${vehicle['model']}?',
           ),
           actions: [
             TextButton(
@@ -654,12 +682,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  _vehicles.remove(vehicle);
-                });
+              onPressed: () async {
                 Navigator.pop(dialogContext);
-                _showMessage('Vehicle removed.');
+                await _deleteVehicle(vehicleId);
               },
               child: const Text('Remove', style: TextStyle(color: Colors.red)),
             ),
@@ -669,12 +694,37 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-  // ---------------------------------------------------------
+  Future<void> _deleteVehicle(int vehicleId) async {
+    if (_deletingVehicleIds.contains(vehicleId)) return;
+
+    setState(() => _deletingVehicleIds.add(vehicleId));
+
+    try {
+      await CustomerService.deleteVehicle(vehicleId);
+
+      if (!mounted) return;
+
+      setState(() {
+        _vehicles.removeWhere(
+          (vehicle) => vehicle['id'].toString() == vehicleId.toString(),
+        );
+        _deletingVehicleIds.remove(vehicleId);
+      });
+
+      _showMessage('Vehicle removed successfully.');
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() => _deletingVehicleIds.remove(vehicleId));
+      _showMessage('Could not remove vehicle: $error');
+    }
+  }
+
   // BOOKINGS PAGE
-  // ---------------------------------------------------------
 
   Widget _buildBookingsPage() {
     final activeBookings = _bookings.where(_isActiveBooking).toList();
+
     final pastBookings = _bookings
         .where((booking) => !_isActiveBooking(booking))
         .toList();
@@ -735,14 +785,18 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 onTap: () => _showBookingDetails(booking),
               ),
             ),
+          const SizedBox(height: 12),
+          const Text(
+            'Note: Booking records are currently held only in this app session. '
+            'Permanent booking storage will be connected when the booking API is ready.',
+            style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+          ),
         ],
       ),
     );
   }
 
-  // ---------------------------------------------------------
   // PROFILE PAGE
-  // ---------------------------------------------------------
 
   Widget _buildProfilePage() {
     return _pageContainer(
@@ -769,17 +823,39 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     color: dashboardBlue,
                   ),
                 ),
-                SizedBox(height: 14),
+                const SizedBox(height: 14),
                 Text(
-                  'Vehicle Owner',
-                  style: TextStyle(
+                  _isLoadingProfile ? 'Loading...' : _ownerName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
                     color: dashboardNavy,
                   ),
                 ),
-                SizedBox(height: 6),
-                Text('Demo account', style: TextStyle(color: Colors.blueGrey)),
+                const SizedBox(height: 6),
+                Text(
+                  _ownerEmail.isEmpty ? 'Email not provided' : _ownerEmail,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.blueGrey),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  _ownerPhone.isEmpty ? 'Phone not provided' : _ownerPhone,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.blueGrey),
+                ),
+                if (_ownerAddress.isNotEmpty || _ownerCity.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    [
+                      _ownerAddress,
+                      _ownerCity,
+                    ].where((value) => value.isNotEmpty).join(', '),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.blueGrey),
+                  ),
+                ],
               ],
             ),
           ),
@@ -809,7 +885,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-  void _openPersonalInformation() async {
+  Future<void> _openPersonalInformation() async {
     final result = await Navigator.push<Map<String, String>>(
       context,
       MaterialPageRoute(
@@ -818,20 +894,36 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
           email: _ownerEmail,
           phone: _ownerPhone,
           address: _ownerAddress,
+          city: _ownerCity,
         ),
       ),
     );
+
     if (!mounted || result == null) return;
-    setState(() {
-      _ownerName = result['name'] ?? _ownerName;
-      _ownerEmail = result['email'] ?? _ownerEmail;
-      _ownerPhone = result['phone'] ?? _ownerPhone;
-      _ownerAddress = result['address'] ?? _ownerAddress;
-    });
-    _showMessage('Personal information updated.');
+
+    try {
+      await CustomerService.updateCustomerProfile(
+        phone: result['phone'],
+        address: result['address'],
+        city: result['city'],
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _ownerPhone = result['phone'] ?? _ownerPhone;
+        _ownerAddress = result['address'] ?? _ownerAddress;
+        _ownerCity = result['city'] ?? _ownerCity;
+      });
+
+      _showMessage('Personal information saved successfully.');
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage('Could not save profile information: $error');
+    }
   }
 
-  void _openNotificationSettings() async {
+  Future<void> _openNotificationSettings() async {
     final result = await Navigator.push<Map<String, bool>>(
       context,
       MaterialPageRoute(
@@ -842,7 +934,9 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         ),
       ),
     );
+
     if (!mounted || result == null) return;
+
     setState(() {
       _bookingNotifications =
           result['bookingNotifications'] ?? _bookingNotifications;
@@ -850,7 +944,8 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       _promotionalNotifications =
           result['promotionalNotifications'] ?? _promotionalNotifications;
     });
-    _showMessage('Notification preferences saved.');
+
+    _showMessage('Notification preferences updated for this app session.');
   }
 
   void _openHelpSupport() {
@@ -861,21 +956,23 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   }
 
   void _confirmLogout() {
+    if (_isLoggingOut) return;
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Log Out'),
-          content: const Text('Do you want to return to the login screen?'),
+          content: const Text('Do you want to log out of your account?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(dialogContext);
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                await _logout();
               },
               child: const Text('Log Out'),
             ),
@@ -885,9 +982,27 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     );
   }
 
-  // ---------------------------------------------------------
+  Future<void> _logout() async {
+    if (_isLoggingOut) return;
+
+    setState(() => _isLoggingOut = true);
+
+    try {
+      await AuthService.logout();
+
+      if (!mounted) return;
+
+      // Return to the first route, normally the login screen.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() => _isLoggingOut = false);
+      _showMessage('Could not log out: $error');
+    }
+  }
+
   // REUSABLE COMPONENTS
-  // ---------------------------------------------------------
 
   Widget _pageContainer({
     required String title,
@@ -895,38 +1010,31 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     required Widget child,
     Widget? action,
   }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(22),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: dashboardNavy,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: Colors.blueGrey),
-                  ),
-                  if (action != null) ...[const SizedBox(height: 18), action],
-                  const SizedBox(height: 22),
-                  child,
-                ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(22),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: dashboardNavy,
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(subtitle, style: const TextStyle(color: Colors.blueGrey)),
+              if (action != null) ...[const SizedBox(height: 18), action],
+              const SizedBox(height: 22),
+              child,
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -991,14 +1099,14 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   }
 
   void _showMessage(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
-// ---------------------------------------------------------
 // STAT CARD
-// ---------------------------------------------------------
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
@@ -1069,9 +1177,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
 // QUICK ACTION
-// ---------------------------------------------------------
 
 class _QuickAction extends StatelessWidget {
   final IconData icon;
@@ -1120,9 +1226,7 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
 // SERVICE HISTORY PAGE
-// ---------------------------------------------------------
 
 class _ServiceHistoryPage extends StatelessWidget {
   final List<Map<String, String>> activities;
@@ -1171,9 +1275,7 @@ class _ServiceHistoryPage extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
 // UPCOMING BOOKING TILE
-// ---------------------------------------------------------
 
 class _BookingTile extends StatelessWidget {
   final Map<String, String> booking;
@@ -1223,9 +1325,7 @@ class _BookingTile extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
 // RECENT ACTIVITY TILE
-// ---------------------------------------------------------
 
 class _ActivityTile extends StatelessWidget {
   final Map<String, String> activity;
@@ -1258,8 +1358,7 @@ class _ActivityTile extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 5),
           child: Text(
-            '${activity['vehicle'] ?? ''} • '
-            '${activity['status'] ?? ''}',
+            '${activity['vehicle'] ?? ''} • ${activity['status'] ?? ''}',
           ),
         ),
         trailing: Text(
@@ -1271,21 +1370,21 @@ class _ActivityTile extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
-// PERSONAL INFORMATION
-// ---------------------------------------------------------
+// PERSONAL INFORMATION PAGE
 
 class _PersonalInformationPage extends StatefulWidget {
   final String name;
   final String email;
   final String phone;
   final String address;
+  final String city;
 
   const _PersonalInformationPage({
     required this.name,
     required this.email,
     required this.phone,
     required this.address,
+    required this.city,
   });
 
   @override
@@ -1294,42 +1393,32 @@ class _PersonalInformationPage extends StatefulWidget {
 }
 
 class _PersonalInformationPageState extends State<_PersonalInformationPage> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
+  late final TextEditingController _cityController;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.name);
-    _emailController = TextEditingController(text: widget.email);
+
     _phoneController = TextEditingController(text: widget.phone);
     _addressController = TextEditingController(text: widget.address);
+    _cityController = TextEditingController(text: widget.city);
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _cityController.dispose();
     super.dispose();
   }
 
   void _save() {
-    if (_nameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name and email are required.')),
-      );
-      return;
-    }
     Navigator.pop(context, <String, String>{
-      'name': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
       'phone': _phoneController.text.trim(),
       'address': _addressController.text.trim(),
+      'city': _cityController.text.trim(),
     });
   }
 
@@ -1347,7 +1436,7 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
         padding: const EdgeInsets.all(20),
         children: [
           const Text(
-            'Update your account details',
+            'Your account information',
             style: TextStyle(
               fontSize: 21,
               fontWeight: FontWeight.bold,
@@ -1355,13 +1444,8 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
             ),
           ),
           const SizedBox(height: 18),
-          _buildField('Full Name', _nameController, Icons.person_outline),
-          _buildField(
-            'Email Address',
-            _emailController,
-            Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-          ),
+          _readOnlyField('Full Name', widget.name),
+          _readOnlyField('Email Address', widget.email),
           _buildField(
             'Phone Number',
             _phoneController,
@@ -1374,6 +1458,7 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
             Icons.location_on_outlined,
             maxLines: 2,
           ),
+          _buildField('City', _cityController, Icons.location_city_outlined),
           const SizedBox(height: 10),
           SizedBox(
             height: 48,
@@ -1387,6 +1472,22 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _readOnlyField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        initialValue: value,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: const Color(0xFFEFF2F6),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(13)),
+        ),
       ),
     );
   }
@@ -1423,9 +1524,7 @@ class _PersonalInformationPageState extends State<_PersonalInformationPage> {
   }
 }
 
-// ---------------------------------------------------------
-// NOTIFICATION SETTINGS
-// ---------------------------------------------------------
+// NOTIFICATION SETTINGS PAGE
 
 class _NotificationSettingsPage extends StatefulWidget {
   final bool bookingNotifications;
@@ -1451,6 +1550,7 @@ class _NotificationSettingsPageState extends State<_NotificationSettingsPage> {
   @override
   void initState() {
     super.initState();
+
     _bookingNotifications = widget.bookingNotifications;
     _serviceReminders = widget.serviceReminders;
     _promotionalNotifications = widget.promotionalNotifications;
@@ -1524,6 +1624,11 @@ class _NotificationSettingsPageState extends State<_NotificationSettingsPage> {
               child: const Text('Save Preferences'),
             ),
           ),
+          const SizedBox(height: 10),
+          const Text(
+            'These preferences are currently stored only during this app session.',
+            style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -1556,9 +1661,7 @@ class _NotificationSettingsPageState extends State<_NotificationSettingsPage> {
   }
 }
 
-// ---------------------------------------------------------
-// HELP AND SUPPORT
-// ---------------------------------------------------------
+// HELP AND SUPPORT PAGE
 
 class _HelpSupportPage extends StatelessWidget {
   const _HelpSupportPage();
@@ -1592,23 +1695,28 @@ class _HelpSupportPage extends StatelessWidget {
           const SizedBox(height: 18),
           _faq(
             'How do I add a vehicle?',
-            'Open the Vehicles tab and select Add Vehicle. Enter your vehicle details and save.',
+            'Open the Vehicles tab and select Add Vehicle. '
+                'Enter your vehicle details and save.',
           ),
           _faq(
             'How do I book a service?',
-            'Open Book Service or Find Workshop, select the required service and follow the booking steps.',
+            'Open Book Service or Find Workshop, select the '
+                'required service and follow the booking steps.',
           ),
           _faq(
             'Where can I see my appointments?',
-            'Open the Bookings tab to view upcoming appointments and booking history.',
+            'Open the Bookings tab to view your current session bookings. '
+                'Permanent booking records will appear when backend integration is ready.',
           ),
           _faq(
             'Can I change my profile details?',
-            'Open Profile, select Personal Information, update your details and tap Save Changes.',
+            'Open Profile, select Personal Information, update '
+                'your phone, address or city and tap Save Changes.',
           ),
           _faq(
             'Are my settings saved permanently?',
-            'These settings are currently saved only during the running app session. Permanent account storage will be added with Firebase integration.',
+            'Notification preferences are currently saved only '
+                'during the running app session.',
           ),
           const SizedBox(height: 14),
           Card(
@@ -1637,7 +1745,8 @@ class _HelpSupportPage extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Support contact details can be added when the official support channel is configured.',
+                          'Support contact details can be added when '
+                          'the official support channel is configured.',
                           style: TextStyle(color: Colors.blueGrey),
                         ),
                       ],

@@ -1,5 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../services/auth_service.dart';
+import '../services/workshop_service.dart';
+import 'website_qr_scanner_screen.dart';
+
 const Color workshopBlue = Color(0xFF1565C0);
 const Color workshopNavy = Color(0xFF102A43);
 const Color workshopBackground = Color(0xFFF5F7FB);
@@ -14,545 +18,767 @@ class WorkshopDashboard extends StatefulWidget {
 class _WorkshopDashboardState extends State<WorkshopDashboard> {
   int _selectedIndex = 0;
 
-  final bool _bookingNotifications = true;
-  final bool _jobNotifications = true;
-  final bool _invoiceNotifications = true;
+  bool _isLoading = true;
+  String? _error;
 
-  final Map<String, String> workshop = {
-    'name': 'AutoCare Premium Workshop',
-    'location': 'Saddar, Rawalpindi',
-    'phone': '0300-1234567',
-    'email': 'workshop@example.com',
-    'status': 'Verified',
-  };
+  List<Map<String, dynamic>> workshops = [];
+  List<Map<String, dynamic>> branches = [];
+  List<Map<String, dynamic>> services = [];
+  List<Map<String, dynamic>> departments = [];
 
-  final List<Map<String, dynamic>> bookings = [
-    {
-      'customer': 'Ali Ahmed',
-      'phone': '0301-1234567',
-      'vehicle': 'Honda Civic',
-      'registration': 'ABC-123',
-      'service': 'General Maintenance',
-      'date': '02 Nov 2026',
-      'time': '10:00 AM',
-      'status': 'Pending',
-      'remarks': 'Please inspect engine oil and filters.',
-      'amount': 3500,
-      'invoiceStatus': 'Not Generated',
-    },
-    {
-      'customer': 'Usman Khan',
-      'phone': '0302-1234567',
-      'vehicle': 'Toyota Corolla',
-      'registration': 'XYZ-456',
-      'service': 'Oil Change',
-      'date': '02 Nov 2026',
-      'time': '12:00 PM',
-      'status': 'Accepted',
-      'remarks': 'Use recommended engine oil.',
-      'amount': 2500,
-      'invoiceStatus': 'Not Generated',
-    },
-    {
-      'customer': 'Hassan Raza',
-      'phone': '0303-1234567',
-      'vehicle': 'Suzuki Alto',
-      'registration': 'LEA-789',
-      'service': 'Brake Inspection',
-      'date': '01 Nov 2026',
-      'time': '09:00 AM',
-      'status': 'In Progress',
-      'remarks': 'Check brake pads and brake fluid.',
-      'amount': 4200,
-      'invoiceStatus': 'Not Generated',
-    },
-    {
-      'customer': 'Ahmed Faisal',
-      'phone': '0304-1234567',
-      'vehicle': 'Honda City',
-      'registration': 'ABC-789',
-      'service': 'Car Wash',
-      'date': '31 Oct 2026',
-      'time': '11:00 AM',
-      'status': 'Completed',
-      'remarks': 'Interior and exterior cleaning.',
-      'amount': 1000,
-      'invoiceStatus': 'Not Generated',
-    },
-  ];
+  Map<String, dynamic>? selectedWorkshop;
+  Map<String, dynamic>? selectedBranch;
 
-  final List<Map<String, dynamic>> services = [
-    {
-      'name': 'General Maintenance',
-      'price': 'Rs. 2,000',
-      'description': 'Routine vehicle inspection and maintenance.',
-      'active': true,
-    },
-    {
-      'name': 'Oil Change',
-      'price': 'Rs. 1,500',
-      'description': 'Engine oil and filter replacement.',
-      'active': true,
-    },
-    {
-      'name': 'Engine Repair',
-      'price': 'Rs. 5,000',
-      'description': 'Engine inspection and repair services.',
-      'active': true,
-    },
-    {
-      'name': 'Car Wash',
-      'price': 'Rs. 1,000',
-      'description': 'Interior and exterior vehicle cleaning.',
-      'active': true,
-    },
-    {
-      'name': 'Brake Inspection',
-      'price': 'Rs. 1,200',
-      'description': 'Brake system inspection and checking.',
-      'active': true,
-    },
-  ];
+  int get workshopId => int.parse(selectedWorkshop!['id'].toString());
+  int get branchId => int.parse(selectedBranch!['id'].toString());
 
-  final List<Map<String, String>> customers = [
-    {
-      'name': 'Ali Ahmed',
-      'phone': '0301-1234567',
-      'vehicle': 'Honda Civic',
-      'registration': 'ABC-123',
-    },
-    {
-      'name': 'Usman Khan',
-      'phone': '0302-1234567',
-      'vehicle': 'Toyota Corolla',
-      'registration': 'XYZ-456',
-    },
-    {
-      'name': 'Hassan Raza',
-      'phone': '0303-1234567',
-      'vehicle': 'Suzuki Alto',
-      'registration': 'LEA-789',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadWorkshopData();
+  }
 
-  List<Map<String, dynamic>> get pendingBookings =>
-      bookings.where((b) => b['status'] == 'Pending').toList();
-
-  List<Map<String, dynamic>> get acceptedBookings =>
-      bookings.where((b) => b['status'] == 'Accepted').toList();
-
-  List<Map<String, dynamic>> get activeJobs =>
-      bookings.where((b) => b['status'] == 'In Progress').toList();
-
-  List<Map<String, dynamic>> get completedBookings =>
-      bookings.where((b) => b['status'] == 'Completed').toList();
-
-  void _showMessage(String message) {
+  void _message(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _updateStatus(Map<String, dynamic> booking, String status) {
+  int _id(Map<String, dynamic> item) => int.parse(item['id'].toString());
+
+  Future<void> _loadWorkshopData() async {
     setState(() {
-      booking['status'] = status;
+      _isLoading = true;
+      _error = null;
     });
 
-    _showMessage('Booking status updated to $status.');
+    try {
+      final result = await WorkshopService.getWorkshops();
+      if (!mounted) return;
+
+      workshops = result;
+
+      if (workshops.isEmpty) {
+        setState(() {
+          selectedWorkshop = null;
+          selectedBranch = null;
+          branches = [];
+          services = [];
+          departments = [];
+        });
+        return;
+      }
+
+      final previousWorkshopId = selectedWorkshop == null
+          ? null
+          : _id(selectedWorkshop!);
+
+      selectedWorkshop = workshops.firstWhere(
+        (item) => previousWorkshopId != null && _id(item) == previousWorkshopId,
+        orElse: () => workshops.first,
+      );
+
+      await _loadBranches();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  void _acceptBooking(Map<String, dynamic> booking) {
-    _updateStatus(booking, 'Accepted');
-  }
+  Future<void> _loadBranches() async {
+    if (selectedWorkshop == null) return;
 
-  void _rejectBooking(Map<String, dynamic> booking) {
-    setState(() {
-      booking['status'] = 'Rejected';
-    });
+    final result = await WorkshopService.getBranches(workshopId);
+    if (!mounted) return;
 
-    _showMessage('Service request rejected.');
-  }
+    branches = result;
 
-  void _completeBooking(Map<String, dynamic> booking) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Complete Job'),
-        content: const Text(
-          'Confirm that this service job has been completed?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Not Yet'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              _updateStatus(booking, 'Completed');
-              setState(() => booking['invoiceStatus'] = 'Ready to Generate');
-            },
-            child: const Text('Confirm Completion'),
-          ),
-        ],
-      ),
-    );
-  }
+    if (branches.isEmpty) {
+      setState(() {
+        selectedBranch = null;
+        services = [];
+        departments = [];
+      });
+      return;
+    }
 
-  void _showBookingDetails(Map<String, dynamic> booking) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (sheetContext) {
-        return Padding(
-          padding: const EdgeInsets.all(22),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Booking Details',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: workshopNavy,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _detailRow(
-                  Icons.person_outline,
-                  'Customer',
-                  booking['customer'].toString(),
-                ),
-                _detailRow(
-                  Icons.phone_outlined,
-                  'Phone',
-                  booking['phone'].toString(),
-                ),
-                _detailRow(
-                  Icons.directions_car,
-                  'Vehicle',
-                  booking['vehicle'].toString(),
-                ),
-                _detailRow(
-                  Icons.confirmation_number_outlined,
-                  'Registration',
-                  booking['registration'].toString(),
-                ),
-                _detailRow(
-                  Icons.build_outlined,
-                  'Service',
-                  booking['service'].toString(),
-                ),
-                _detailRow(
-                  Icons.calendar_today,
-                  'Date',
-                  booking['date'].toString(),
-                ),
-                _detailRow(
-                  Icons.access_time,
-                  'Time',
-                  booking['time'].toString(),
-                ),
-                _detailRow(
-                  Icons.info_outline,
-                  'Status',
-                  booking['status'].toString(),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Customer Remarks',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: workshopNavy,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  booking['remarks'].toString(),
-                  style: const TextStyle(color: Colors.blueGrey),
-                ),
-                const SizedBox(height: 22),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: workshopBlue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Close'),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    final previousBranchId = selectedBranch == null
+        ? null
+        : _id(selectedBranch!);
+
+    selectedBranch = branches.firstWhere(
+      (item) => previousBranchId != null && _id(item) == previousBranchId,
+      orElse: () {
+        return branches.firstWhere(
+          (item) => item['is_primary'] == true,
+          orElse: () => branches.first,
         );
       },
     );
+
+    await _loadBranchData();
   }
 
-  void _openNotifications() {
-    final messages = <String>[];
-    if (_bookingNotifications && pendingBookings.isNotEmpty) {
-      messages.add(
-        '${pendingBookings.length} new booking request(s) need your review.',
-      );
+  Future<void> _loadBranchData() async {
+    if (selectedBranch == null) return;
+
+    try {
+      final results = await Future.wait([
+        WorkshopService.getServices(branchId),
+        WorkshopService.getDepartments(branchId),
+      ]);
+
+      if (!mounted) return;
+
+      setState(() {
+        services = results[0];
+        departments = results[1];
+      });
+    } catch (e) {
+      _message('Could not load branch information: $e');
     }
-    if (_jobNotifications && activeJobs.isNotEmpty) {
-      messages.add('${activeJobs.length} job(s) are currently in progress.');
+  }
+
+  Future<void> _selectWorkshop(int id) async {
+    final selected = workshops.firstWhere((item) => _id(item) == id);
+
+    setState(() {
+      selectedWorkshop = selected;
+      selectedBranch = null;
+      branches = [];
+      services = [];
+      departments = [];
+      _isLoading = true;
+    });
+
+    try {
+      await _loadBranches();
+    } catch (e) {
+      _message('Could not load branches: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-    if (_invoiceNotifications && completedBookings.isNotEmpty) {
-      messages.add(
-        '${completedBookings.length} completed service(s) can be invoiced.',
-      );
+  }
+
+  Future<void> _selectBranch(int id) async {
+    final selected = branches.firstWhere((item) => _id(item) == id);
+
+    setState(() {
+      selectedBranch = selected;
+      services = [];
+      departments = [];
+      _isLoading = true;
+    });
+
+    try {
+      await _loadBranchData();
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => _WorkshopNotificationsPage(messages: messages),
-      ),
-    );
   }
 
-  void _openInvoices() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => _WorkshopInvoicesPage(
-          bookings: completedBookings,
-          onGenerate: (booking) {
-            setState(() {
-              booking['invoiceStatus'] = 'Generated';
-            });
-          },
-        ),
-      ),
-    );
-  }
+  // ------------------------------------------------------------
+  // CREATE WORKSHOP
+  // ------------------------------------------------------------
 
-  void _openCustomerDetails(Map<String, String> customer) {
-    final related = bookings
-        .where(
-          (b) =>
-              b['customer'] == customer['name'] ||
-              b['registration'] == customer['registration'],
-        )
-        .toList();
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (sheetContext) => Padding(
-        padding: const EdgeInsets.all(22),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                customer['name'] ?? 'Customer',
-                style: const TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.bold,
-                  color: workshopNavy,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _detailRow(
-                Icons.phone_outlined,
-                'Phone',
-                customer['phone'] ?? '',
-              ),
-              _detailRow(
-                Icons.directions_car,
-                'Vehicle',
-                customer['vehicle'] ?? '',
-              ),
-              _detailRow(
-                Icons.confirmation_number_outlined,
-                'Registration',
-                customer['registration'] ?? '',
-              ),
-              const Divider(height: 24),
-              const Text(
-                'Service Records',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: workshopNavy,
-                ),
-              ),
-              const SizedBox(height: 8),
-              if (related.isEmpty)
-                const Text('No service records found for this customer.')
-              else
-                ...related.map(
-                  (b) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(b['service'].toString()),
-                    subtitle: Text('${b['date']} • ${b['status']}'),
-                    trailing: _statusBadge(b['status'].toString()),
-                  ),
-                ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(sheetContext),
-                  child: const Text('Close'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _createWorkshop() async {
+    final name = TextEditingController();
+    final description = TextEditingController();
+    final email = TextEditingController();
+    final phone = TextEditingController();
 
-  void _showServiceEditor({Map<String, dynamic>? service}) {
-    final name = TextEditingController(
-      text: service?['name']?.toString() ?? '',
-    );
-    final price = TextEditingController(
-      text: service == null
-          ? ''
-          : service['price'].toString().replaceAll('Rs. ', ''),
-    );
-    final description = TextEditingController(
-      text: service?['description']?.toString() ?? '',
-    );
-    showDialog<void>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(service == null ? 'Add Service' : 'Edit Service'),
+        title: const Text('Create Workshop'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: name,
-                decoration: const InputDecoration(labelText: 'Service Name'),
-              ),
-              TextField(
-                controller: price,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Price (PKR)'),
+                decoration: const InputDecoration(labelText: 'Workshop Name *'),
               ),
               TextField(
                 controller: description,
-                maxLines: 2,
                 decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              TextField(
+                controller: email,
+                decoration: const InputDecoration(labelText: 'Business Email'),
+              ),
+              TextField(
+                controller: phone,
+                decoration: const InputDecoration(labelText: 'Phone'),
               ),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              final amount = double.tryParse(price.text.trim());
-              if (name.text.trim().isEmpty || amount == null || amount < 0) {
-                _showMessage('Enter a service name and a valid price.');
-                return;
-              }
-              setState(() {
-                if (service == null) {
-                  services.add({
-                    'name': name.text.trim(),
-                    'price': 'Rs. ${amount.toStringAsFixed(0)}',
-                    'description': description.text.trim(),
-                    'active': true,
-                  });
-                } else {
-                  service['name'] = name.text.trim();
-                  service['price'] = 'Rs. ${amount.toStringAsFixed(0)}';
-                  service['description'] = description.text.trim();
-                }
-              });
-              Navigator.pop(dialogContext);
-              _showMessage(
-                service == null ? 'Service added.' : 'Service updated.',
-              );
-            },
-            child: const Text('Save'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Create'),
           ),
         ],
       ),
     );
+
+    if (confirmed != true) {
+      name.dispose();
+      description.dispose();
+      email.dispose();
+      phone.dispose();
+      return;
+    }
+
+    if (name.text.trim().isEmpty) {
+      _message('Workshop name is required.');
+      name.dispose();
+      description.dispose();
+      email.dispose();
+      phone.dispose();
+      return;
+    }
+
+    try {
+      await WorkshopService.createWorkshop(
+        name: name.text.trim(),
+        description: description.text.trim(),
+        email: email.text.trim(),
+        phone: phone.text.trim(),
+      );
+
+      _message('Workshop created successfully.');
+      await _loadWorkshopData();
+    } catch (e) {
+      _message('Could not create workshop: $e');
+    } finally {
+      name.dispose();
+      description.dispose();
+      email.dispose();
+      phone.dispose();
+    }
   }
 
-  void _editWorkshopField(String title, String key) {
-    final controller = TextEditingController(text: workshop[key] ?? '');
-    showDialog<void>(
+  // ------------------------------------------------------------
+  // CREATE BRANCH
+  // ------------------------------------------------------------
+
+  Future<void> _createBranch() async {
+    if (selectedWorkshop == null) return;
+
+    final name = TextEditingController();
+    final address = TextEditingController();
+    final city = TextEditingController();
+    final phone = TextEditingController();
+    final email = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Edit $title'),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(labelText: title),
+        title: const Text('Add Workshop Branch'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: name,
+                decoration: const InputDecoration(labelText: 'Branch Name *'),
+              ),
+              TextField(
+                controller: address,
+                decoration: const InputDecoration(labelText: 'Address *'),
+              ),
+              TextField(
+                controller: city,
+                decoration: const InputDecoration(labelText: 'City *'),
+              ),
+              TextField(
+                controller: phone,
+                decoration: const InputDecoration(labelText: 'Phone'),
+              ),
+              TextField(
+                controller: email,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (controller.text.trim().isEmpty) {
-                _showMessage('$title cannot be empty.');
-                return;
-              }
-              setState(() => workshop[key] = controller.text.trim());
-              Navigator.pop(dialogContext);
-              _showMessage('$title updated.');
-            },
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Create Branch'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      name.dispose();
+      address.dispose();
+      city.dispose();
+      phone.dispose();
+      email.dispose();
+      return;
+    }
+
+    if (name.text.trim().isEmpty ||
+        address.text.trim().isEmpty ||
+        city.text.trim().isEmpty) {
+      _message('Branch name, address and city are required.');
+      name.dispose();
+      address.dispose();
+      city.dispose();
+      phone.dispose();
+      email.dispose();
+      return;
+    }
+
+    try {
+      await WorkshopService.createBranch(
+        workshopId,
+        name: name.text.trim(),
+        address: address.text.trim(),
+        city: city.text.trim(),
+        phone: phone.text.trim(),
+        email: email.text.trim(),
+      );
+
+      _message('Branch created successfully.');
+      await _loadWorkshopData();
+    } catch (e) {
+      _message('Could not create branch: $e');
+    } finally {
+      name.dispose();
+      address.dispose();
+      city.dispose();
+      phone.dispose();
+      email.dispose();
+    }
+  }
+
+  // ------------------------------------------------------------
+  // SERVICE MANAGEMENT
+  // ------------------------------------------------------------
+
+  Future<void> _showServiceEditor({Map<String, dynamic>? service}) async {
+    if (selectedBranch == null) {
+      _message('Create or select a branch first.');
+      return;
+    }
+
+    final name = TextEditingController(
+      text: service?['name']?.toString() ?? '',
+    );
+    final price = TextEditingController(
+      text: service?['price']?.toString() ?? '',
+    );
+    final description = TextEditingController(
+      text: service?['description']?.toString() ?? '',
+    );
+    final duration = TextEditingController(
+      text: service?['estimated_duration_minutes']?.toString() ?? '60',
+    );
+
+    int? departmentId = service?['department'] is int
+        ? service!['department'] as int
+        : int.tryParse(service?['department']?.toString() ?? '');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, refreshDialog) => AlertDialog(
+          title: Text(service == null ? 'Add Service' : 'Edit Service'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: name,
+                  decoration: const InputDecoration(
+                    labelText: 'Service Name *',
+                  ),
+                ),
+                TextField(
+                  controller: price,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(labelText: 'Price (PKR) *'),
+                ),
+                TextField(
+                  controller: duration,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Estimated Duration (minutes) *',
+                  ),
+                ),
+                TextField(
+                  controller: description,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  initialValue: departmentId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Department (Optional)',
+                  ),
+                  items: [
+                    const DropdownMenuItem<int>(
+                      value: null,
+                      child: Text('No Department'),
+                    ),
+                    ...departments.map(
+                      (department) => DropdownMenuItem<int>(
+                        value: _id(department),
+                        child: Text(department['name'].toString()),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    refreshDialog(() => departmentId = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) {
+      name.dispose();
+      price.dispose();
+      duration.dispose();
+      description.dispose();
+      return;
+    }
+
+    final amount = double.tryParse(price.text.trim());
+    final minutes = int.tryParse(duration.text.trim());
+
+    if (name.text.trim().isEmpty ||
+        amount == null ||
+        amount < 0 ||
+        minutes == null ||
+        minutes <= 0) {
+      _message('Enter a valid name, price and duration.');
+      name.dispose();
+      price.dispose();
+      duration.dispose();
+      description.dispose();
+      return;
+    }
+
+    try {
+      if (service == null) {
+        await WorkshopService.createService(
+          branchId,
+          name: name.text.trim(),
+          description: description.text.trim(),
+          price: amount,
+          estimatedDurationMinutes: minutes,
+          departmentId: departmentId,
+        );
+        _message('Service added successfully.');
+      } else {
+        await WorkshopService.updateService(_id(service), {
+          'name': name.text.trim(),
+          'description': description.text.trim(),
+          'price': amount,
+          'estimated_duration_minutes': minutes,
+          'department': departmentId,
+        });
+        _message('Service updated successfully.');
+      }
+
+      await _loadBranchData();
+    } catch (e) {
+      _message('Could not save service: $e');
+    } finally {
+      name.dispose();
+      price.dispose();
+      duration.dispose();
+      description.dispose();
+    }
+  }
+
+  Future<void> _toggleService(Map<String, dynamic> service, bool active) async {
+    try {
+      await WorkshopService.updateService(_id(service), {'is_active': active});
+
+      await _loadBranchData();
+      _message(active ? 'Service activated.' : 'Service deactivated.');
+    } catch (e) {
+      _message('Could not update service: $e');
+    }
+  }
+
+  Future<void> _deleteService(Map<String, dynamic> service) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Service'),
+        content: Text('Are you sure you want to remove ${service['name']}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await WorkshopService.deleteService(_id(service));
+      await _loadBranchData();
+      _message('Service removed.');
+    } catch (e) {
+      _message('Could not delete service: $e');
+    }
+  }
+
+  // ------------------------------------------------------------
+  // WORKSHOP PROFILE EDITING
+  // ------------------------------------------------------------
+
+  Future<void> _editWorkshop() async {
+    if (selectedWorkshop == null) return;
+
+    final name = TextEditingController(
+      text: selectedWorkshop!['name']?.toString() ?? '',
+    );
+    final email = TextEditingController(
+      text: selectedWorkshop!['email']?.toString() ?? '',
+    );
+    final phone = TextEditingController(
+      text: selectedWorkshop!['phone']?.toString() ?? '',
+    );
+    final description = TextEditingController(
+      text: selectedWorkshop!['description']?.toString() ?? '',
+    );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Workshop Information'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: name,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: email,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+              TextField(
+                controller: phone,
+                decoration: const InputDecoration(labelText: 'Phone'),
+              ),
+              TextField(
+                controller: description,
+                decoration: const InputDecoration(labelText: 'Description'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Save'),
           ),
         ],
       ),
     );
+
+    if (confirmed == true && name.text.trim().isNotEmpty) {
+      try {
+        await WorkshopService.updateWorkshop(workshopId, {
+          'name': name.text.trim(),
+          'email': email.text.trim(),
+          'phone': phone.text.trim(),
+          'description': description.text.trim(),
+        });
+        await _loadWorkshopData();
+        _message('Workshop information updated.');
+      } catch (e) {
+        _message('Could not update workshop: $e');
+      }
+    }
+
+    name.dispose();
+    email.dispose();
+    phone.dispose();
+    description.dispose();
   }
 
-  void _showHelpSupport() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const _WorkshopHelpPage()),
+  Future<void> _editBranch() async {
+    if (selectedBranch == null) return;
+
+    final name = TextEditingController(
+      text: selectedBranch!['name']?.toString() ?? '',
     );
+    final address = TextEditingController(
+      text: selectedBranch!['address']?.toString() ?? '',
+    );
+    final city = TextEditingController(
+      text: selectedBranch!['city']?.toString() ?? '',
+    );
+    final phone = TextEditingController(
+      text: selectedBranch!['phone']?.toString() ?? '',
+    );
+    final email = TextEditingController(
+      text: selectedBranch!['email']?.toString() ?? '',
+    );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Branch Information'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: name,
+                decoration: const InputDecoration(labelText: 'Branch Name'),
+              ),
+              TextField(
+                controller: address,
+                decoration: const InputDecoration(labelText: 'Address'),
+              ),
+              TextField(
+                controller: city,
+                decoration: const InputDecoration(labelText: 'City'),
+              ),
+              TextField(
+                controller: phone,
+                decoration: const InputDecoration(labelText: 'Phone'),
+              ),
+              TextField(
+                controller: email,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true &&
+        name.text.trim().isNotEmpty &&
+        address.text.trim().isNotEmpty &&
+        city.text.trim().isNotEmpty) {
+      try {
+        await WorkshopService.updateBranch(branchId, {
+          'name': name.text.trim(),
+          'address': address.text.trim(),
+          'city': city.text.trim(),
+          'phone': phone.text.trim(),
+          'email': email.text.trim(),
+        });
+        await _loadWorkshopData();
+        _message('Branch information updated.');
+      } catch (e) {
+        _message('Could not update branch: $e');
+      }
+    }
+
+    name.dispose();
+    address.dispose();
+    city.dispose();
+    phone.dispose();
+    email.dispose();
   }
 
-  void _confirmLogout() {
-    showDialog<void>(
+  // ------------------------------------------------------------
+  // LOGOUT
+  // ------------------------------------------------------------
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Log Out'),
         content: const Text(
-          'Are you sure you want to log out of the workshop account?',
+          'Are you sure you want to log out of your workshop account?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Log Out', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
+
+    if (confirmed != true) return;
+
+    try {
+      await AuthService.logout();
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      _message('Logout failed: $e');
+    }
   }
+
+  // ------------------------------------------------------------
+  // BUILD
+  // ------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -571,7 +797,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: workshopNavy),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _confirmLogout,
         ),
         title: const Row(
           children: [
@@ -589,13 +815,30 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: workshopNavy),
-            onPressed: _openNotifications,
+            icon: const Icon(Icons.qr_code_scanner, color: workshopBlue),
+            tooltip: 'Website QR Login',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WebsiteQrScannerScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: workshopNavy),
+            onPressed: _loadWorkshopData,
+            tooltip: 'Refresh',
           ),
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(index: _selectedIndex, children: pages),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+            ? _errorView()
+            : IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -624,178 +867,256 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  // HOME DASHBOARD
+  Widget _errorView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off, size: 50, color: Colors.red),
+            const SizedBox(height: 15),
+            const Text(
+              'Could not load workshop data',
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+                color: workshopNavy,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(_error ?? '', textAlign: TextAlign.center),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              onPressed: _loadWorkshopData,
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // HOME
+  // ------------------------------------------------------------
 
   Widget _buildHome() {
+    if (selectedWorkshop == null) {
+      return _pageLayout(
+        child: Column(
+          children: [
+            const SizedBox(height: 50),
+            const Icon(Icons.storefront, size: 75, color: workshopBlue),
+            const SizedBox(height: 18),
+            const Text(
+              'Welcome, Workshop Owner!',
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.bold,
+                color: workshopNavy,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'You have not created a workshop yet. Create your workshop to get started.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.blueGrey),
+            ),
+            const SizedBox(height: 22),
+            ElevatedButton.icon(
+              onPressed: _createWorkshop,
+              icon: const Icon(Icons.add),
+              label: const Text('Create Workshop'),
+              style: _primaryButtonStyle,
+            ),
+          ],
+        ),
+      );
+    }
+
     return _pageLayout(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Welcome, Workshop! 👋',
+            'Welcome, Workshop Owner!',
             style: TextStyle(
-              fontSize: 25,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: workshopNavy,
             ),
           ),
           const SizedBox(height: 7),
           const Text(
-            'Manage your workshop and customer services.',
+            'Manage your workshop and services.',
             style: TextStyle(color: Colors.blueGrey),
           ),
           const SizedBox(height: 22),
-
-          _buildWorkshopCard(),
-
-          const SizedBox(height: 25),
-
+          _selectionCard(),
+          const SizedBox(height: 22),
           const Text('Workshop Overview', style: _headingStyle),
-          const SizedBox(height: 14),
-
+          const SizedBox(height: 13),
           GridView.count(
-            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 4 : 2,
+            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 3 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.4,
+            childAspectRatio: 1.45,
             children: [
               _statCard(
-                'New Requests',
-                '${pendingBookings.length}',
-                Icons.notifications_active_outlined,
-                Colors.orange,
+                'Workshops',
+                workshops.length.toString(),
+                Icons.storefront,
               ),
               _statCard(
-                'Accepted',
-                '${acceptedBookings.length}',
-                Icons.event_available,
-                workshopBlue,
+                'Branches',
+                branches.length.toString(),
+                Icons.location_on_outlined,
               ),
               _statCard(
-                'Active Jobs',
-                '${activeJobs.length}',
-                Icons.build_circle_outlined,
-                Colors.deepPurple,
-              ),
-              _statCard(
-                'Completed',
-                '${completedBookings.length}',
-                Icons.check_circle_outline,
-                Colors.green,
+                'Active Services',
+                services.where((s) => s['is_active'] == true).length.toString(),
+                Icons.build_outlined,
               ),
             ],
           ),
-
-          const SizedBox(height: 25),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('New Service Requests', style: _headingStyle),
-              TextButton(
-                onPressed: () {
-                  setState(() => _selectedIndex = 1);
-                },
-                child: const Text('View All'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          if (pendingBookings.isEmpty)
-            _emptyCard(
-              Icons.inbox_outlined,
-              'No new requests',
-              'New customer bookings will appear here.',
-            )
-          else
-            ...pendingBookings.map(_buildBookingCard),
-
-          const SizedBox(height: 25),
-
-          const Text('Active Jobs', style: _headingStyle),
+          const SizedBox(height: 24),
+          const Text('Branch Services', style: _headingStyle),
           const SizedBox(height: 12),
-
-          if (activeJobs.isEmpty)
+          if (selectedBranch == null)
+            _emptyCard(
+              Icons.add_business,
+              'No branch created',
+              'Add a branch to start managing services.',
+            )
+          else if (services.isEmpty)
             _emptyCard(
               Icons.build_outlined,
-              'No active jobs',
-              'Accepted jobs can be started from the Jobs tab.',
+              'No services yet',
+              'Add services from the Services tab.',
             )
           else
-            ...activeJobs.map(_buildJobCard),
+            ...services.take(3).map(_serviceSummaryCard),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => setState(() => _selectedIndex = 3),
+            icon: const Icon(Icons.build),
+            label: const Text('Manage Services'),
+          ),
         ],
       ),
     );
   }
 
-  // WORKSHOP PROFILE CARD
-
-  Widget _buildWorkshopCard() {
+  Widget _selectionCard() {
     return _card(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF3FF),
-              borderRadius: BorderRadius.circular(15),
+          const Text('Select Workshop', style: _headingStyle),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<int>(
+            initialValue: _id(selectedWorkshop!),
+            isExpanded: true,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Workshop',
             ),
-            child: const Icon(Icons.storefront, color: workshopBlue, size: 34),
+            items: workshops.map((item) {
+              return DropdownMenuItem<int>(
+                value: _id(item),
+                child: Text(item['name'].toString()),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) _selectWorkshop(value);
+            },
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  workshop['name']!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: workshopNavy,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  workshop['location']!,
-                  style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
-                ),
-                const SizedBox(height: 7),
-                Row(
-                  children: const [
-                    Icon(Icons.verified, color: Colors.green, size: 15),
-                    SizedBox(width: 5),
-                    Text(
-                      'Verified Workshop',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Expanded(
+                child: Text('Select Branch', style: _headingStyle),
+              ),
+              TextButton.icon(
+                onPressed: _createBranch,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Branch'),
+              ),
+            ],
+          ),
+          if (branches.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'No branches available. Add your first branch.',
+                style: TextStyle(color: Colors.blueGrey),
+              ),
+            )
+          else
+            DropdownButtonFormField<int>(
+              initialValue: _id(selectedBranch!),
+              isExpanded: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Branch',
+              ),
+              items: branches.map((item) {
+                return DropdownMenuItem<int>(
+                  value: _id(item),
+                  child: Text(item['name'].toString()),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) _selectBranch(value);
+              },
             ),
-          ),
+          if (selectedBranch != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              '${selectedBranch!['address'] ?? ''}, ${selectedBranch!['city'] ?? ''}',
+              style: const TextStyle(color: Colors.blueGrey),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // STATISTICS CARD
+  Widget _serviceSummaryCard(Map<String, dynamic> service) {
+    return _card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFEAF3FF),
+          child: Icon(Icons.build, color: workshopBlue),
+        ),
+        title: Text(
+          service['name'].toString(),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: workshopNavy,
+          ),
+        ),
+        subtitle: Text('PKR ${service['price']}'),
+        trailing: _statusBadge(
+          service['is_active'] == true ? 'Active' : 'Inactive',
+        ),
+      ),
+    );
+  }
 
-  Widget _statCard(String title, String value, IconData icon, Color color) {
+  Widget _statCard(String title, String value, IconData icon) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 25),
+          Icon(icon, color: workshopBlue, size: 25),
           const SizedBox(height: 10),
           Text(
             value,
@@ -814,254 +1135,33 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  // BOOKING CARD
-
-  Widget _buildBookingCard(Map<String, dynamic> booking) {
-    return _card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.person_outline, color: workshopBlue),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  booking['customer'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: workshopNavy,
-                  ),
-                ),
-              ),
-              _statusBadge(booking['status']),
-            ],
-          ),
-          const Divider(height: 24),
-          _detailRow(Icons.directions_car, 'Vehicle', booking['vehicle']),
-          _detailRow(
-            Icons.confirmation_number_outlined,
-            'Registration',
-            booking['registration'],
-          ),
-          _detailRow(Icons.build_outlined, 'Service', booking['service']),
-          _detailRow(
-            Icons.calendar_today,
-            'Date & Time',
-            '${booking['date']} • ${booking['time']}',
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _showBookingDetails(booking),
-                  child: const Text('Details'),
-                ),
-              ),
-              if (booking['status'] == 'Pending') ...[
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _rejectBooking(booking),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                    ),
-                    child: const Text('Reject'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _acceptBooking(booking),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: workshopBlue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Accept'),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // JOB CARD
-
-  Widget _buildJobCard(Map<String, dynamic> booking) {
-    return _card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.build_circle_outlined, color: workshopBlue),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  booking['service'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: workshopNavy,
-                  ),
-                ),
-              ),
-              _statusBadge(booking['status']),
-            ],
-          ),
-          const SizedBox(height: 15),
-          _detailRow(Icons.person_outline, 'Customer', booking['customer']),
-          _detailRow(Icons.directions_car, 'Vehicle', booking['vehicle']),
-          _detailRow(
-            Icons.confirmation_number_outlined,
-            'Registration',
-            booking['registration'],
-          ),
-          _detailRow(Icons.calendar_today, 'Date', booking['date']),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _completeBooking(booking),
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Mark as Completed'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // BOOKINGS PAGE
-
-  String _bookingFilter = 'All';
+  // ------------------------------------------------------------
+  // BOOKINGS AND JOBS
+  // ------------------------------------------------------------
 
   Widget _buildBookingsPage() {
-    final visibleBookings = bookings.where((booking) {
-      if (_bookingFilter == 'All') return booking['status'] != 'Rejected';
-      return booking['status'] == _bookingFilter;
-    }).toList();
     return _pageLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Service Bookings', style: _headingStyle),
-          const SizedBox(height: 7),
-          const Text(
-            'Manage incoming customer service requests.',
-            style: TextStyle(color: Colors.blueGrey),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: ['All', 'Pending', 'Accepted', 'In Progress', 'Completed']
-                .map((filter) {
-                  return ChoiceChip(
-                    label: Text(filter),
-                    selected: _bookingFilter == filter,
-                    selectedColor: const Color(0xFFE7F0FF),
-                    onSelected: (_) => setState(() => _bookingFilter = filter),
-                  );
-                })
-                .toList(),
-          ),
-          const SizedBox(height: 16),
-          if (visibleBookings.isEmpty)
-            _emptyCard(
-              Icons.calendar_month,
-              'No bookings',
-              'No bookings match this filter.',
-            )
-          else
-            ...visibleBookings.map(_buildBookingCard),
-        ],
+      child: _emptyCard(
+        Icons.calendar_month,
+        'Bookings API integration pending',
+        'Real customer bookings will appear here after the booking endpoints are connected.',
       ),
     );
   }
-
-  // JOBS PAGE
 
   Widget _buildJobsPage() {
-    final jobs = bookings
-        .where((b) => b['status'] == 'Accepted' || b['status'] == 'In Progress')
-        .toList();
-
     return _pageLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Workshop Jobs', style: _headingStyle),
-          const SizedBox(height: 7),
-          const Text(
-            'Track accepted jobs and service progress.',
-            style: TextStyle(color: Colors.blueGrey),
-          ),
-          const SizedBox(height: 20),
-
-          if (jobs.isEmpty)
-            _emptyCard(
-              Icons.work_outline,
-              'No active jobs',
-              'Accepted bookings will appear here.',
-            )
-          else
-            ...jobs.map((booking) {
-              if (booking['status'] == 'Accepted') {
-                return _card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking['service'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: workshopNavy,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${booking['customer']} • ${booking['vehicle']}',
-                        style: const TextStyle(color: Colors.blueGrey),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _updateStatus(booking, 'In Progress'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: workshopBlue,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Start Job'),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return _buildJobCard(booking);
-            }),
-        ],
+      child: _emptyCard(
+        Icons.work_outline,
+        'Jobs API integration pending',
+        'Workshop job management will be connected after the booking workflow is implemented.',
       ),
     );
   }
 
+  // ------------------------------------------------------------
   // SERVICES PAGE
+  // ------------------------------------------------------------
 
   Widget _buildServicesPage() {
     return _pageLayout(
@@ -1069,149 +1169,145 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Expanded(
                 child: Text('Workshop Services', style: _headingStyle),
               ),
               ElevatedButton.icon(
-                onPressed: () => _showServiceEditor(),
+                onPressed: selectedBranch == null
+                    ? null
+                    : () => _showServiceEditor(),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: workshopBlue,
-                  foregroundColor: Colors.white,
-                ),
+                style: _primaryButtonStyle,
               ),
             ],
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 8),
           const Text(
-            'View the services offered by your workshop.',
+            'Manage the services and prices offered by your selected branch.',
             style: TextStyle(color: Colors.blueGrey),
           ),
-          const SizedBox(height: 20),
-
-          ...services.map((service) {
-            return _card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAF3FF),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: const Icon(Icons.build, color: workshopBlue),
-                  ),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          service['name'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: workshopNavy,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          service['description'],
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          service['price'],
-                          style: const TextStyle(
-                            color: workshopBlue,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Switch(
-                        value: service['active'],
-                        activeThumbColor: workshopBlue,
-                        onChanged: (value) =>
-                            setState(() => service['active'] = value),
-                      ),
-                      PopupMenuButton<String>(
-                        onSelected: (choice) {
-                          if (choice == 'edit') {
-                            _showServiceEditor(service: service);
-                          } else if (choice == 'delete') {
-                            setState(() => services.remove(service));
-                            _showMessage('Service removed.');
-                          }
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
+          const SizedBox(height: 16),
+          if (selectedBranch == null)
+            _emptyCard(
+              Icons.location_on_outlined,
+              'Select a branch first',
+              'Open Home and create or select a branch before managing services.',
+            )
+          else if (services.isEmpty)
+            _emptyCard(
+              Icons.build_outlined,
+              'No services available',
+              'Use Add to create your first service.',
+            )
+          else
+            ...services.map(_buildServiceCard),
         ],
       ),
     );
   }
 
-  // CUSTOMERS PAGE CONTENT
+  Widget _buildServiceCard(Map<String, dynamic> service) {
+    final active = service['is_active'] == true;
+    final departmentId = service['department'];
 
-  Widget _buildCustomersSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Customer Records', style: _headingStyle),
-        const SizedBox(height: 12),
-        ...customers.map((customer) {
-          return _card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFEAF3FF),
-                child: Icon(Icons.person, color: workshopBlue),
-              ),
-              title: Text(
-                customer['name']!,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: workshopNavy,
-                ),
-              ),
-              subtitle: Text(
-                '${customer['phone']}\n'
-                '${customer['vehicle']} • ${customer['registration']}',
-              ),
-              isThreeLine: true,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openCustomerDetails(customer),
+    String departmentName = 'No department';
+
+    for (final department in departments) {
+      if (_id(department) == int.tryParse(departmentId?.toString() ?? '')) {
+        departmentName = department['name'].toString();
+        break;
+      }
+    }
+
+    return _card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF3FF),
+              borderRadius: BorderRadius.circular(13),
             ),
-          );
-        }),
-      ],
+            child: const Icon(Icons.build, color: workshopBlue),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service['name'].toString(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: workshopNavy,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  service['description']?.toString() ?? '',
+                  style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'PKR ${service['price']}',
+                  style: const TextStyle(
+                    color: workshopBlue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${service['estimated_duration_minutes'] ?? '-'} minutes â€¢ $departmentName',
+                  style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              Switch(
+                value: active,
+                activeThumbColor: workshopBlue,
+                onChanged: (value) => _toggleService(service, value),
+              ),
+              PopupMenuButton<String>(
+                onSelected: (choice) {
+                  if (choice == 'edit') {
+                    _showServiceEditor(service: service);
+                  } else if (choice == 'delete') {
+                    _deleteService(service);
+                  }
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  // PROFILE PAGE
+  // ------------------------------------------------------------
+  // PROFILE
+  // ------------------------------------------------------------
 
   Widget _buildProfilePage() {
+    if (selectedWorkshop == null) {
+      return _pageLayout(
+        child: _emptyCard(
+          Icons.storefront,
+          'No workshop profile',
+          'Create your workshop to manage its profile.',
+        ),
+      );
+    }
+
     return _pageLayout(
       child: Column(
         children: [
@@ -1222,7 +1318,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           const SizedBox(height: 15),
           Text(
-            workshop['name']!,
+            selectedWorkshop!['name'].toString(),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 21,
@@ -1232,81 +1328,38 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           const SizedBox(height: 6),
           Text(
-            workshop['email']!,
+            selectedWorkshop!['email']?.toString() ?? '',
             style: const TextStyle(color: Colors.blueGrey),
           ),
           const SizedBox(height: 25),
-
           _profileOption(
             Icons.store_outlined,
-            'Workshop Information',
-            onTap: () => _editWorkshopField('Workshop Name', 'name'),
+            'Edit Workshop Information',
+            _editWorkshop,
           ),
           _profileOption(
             Icons.location_on_outlined,
-            'Workshop Address',
-            onTap: () => _editWorkshopField('Workshop Address', 'location'),
+            'Edit Selected Branch',
+            selectedBranch == null ? null : _editBranch,
           ),
           _profileOption(
-            Icons.phone_outlined,
-            'Contact Information',
-            onTap: () => _editWorkshopField('Phone Number', 'phone'),
+            Icons.add_business_outlined,
+            'Add Another Branch',
+            _createBranch,
           ),
           _profileOption(
-            Icons.verified_user_outlined,
-            'Verification Status',
-            onTap: () => showDialog<void>(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: const Text('Verification Status'),
-                content: Text(
-                  'Workshop status: ${workshop['status']}. This is demo status; live verification will be connected later.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            ),
+            Icons.refresh,
+            'Refresh Workshop Data',
+            _loadWorkshopData,
           ),
-          _profileOption(
-            Icons.people_outline,
-            'Customer Records',
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: SingleChildScrollView(child: _buildCustomersSection()),
-                ),
-              );
-            },
-          ),
-          _profileOption(
-            Icons.receipt_long_outlined,
-            'Invoices',
-            onTap: _openInvoices,
-          ),
-          _profileOption(
-            Icons.notifications_outlined,
-            'Notifications',
-            onTap: _openNotifications,
-          ),
-          _profileOption(
-            Icons.help_outline,
-            'Help & Support',
-            onTap: _showHelpSupport,
-          ),
-          _profileOption(Icons.logout, 'Log Out', onTap: _confirmLogout),
+          _profileOption(Icons.help_outline, 'Help & Support', _showHelp),
+          _profileOption(Icons.logout, 'Log Out', _confirmLogout),
         ],
       ),
     );
   }
 
-  Widget _profileOption(IconData icon, String title, {VoidCallback? onTap}) {
+  Widget _profileOption(IconData icon, String title, VoidCallback? onTap) {
     return Card(
       color: Colors.white,
       elevation: 0,
@@ -1319,12 +1372,32 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         leading: Icon(icon, color: workshopBlue),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
-        onTap: onTap ?? () => _showMessage('$title will be implemented later.'),
+        onTap: onTap,
       ),
     );
   }
 
-  // REUSABLE LAYOUT
+  void _showHelp() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Workshop Help'),
+        content: const Text(
+          'Create your workshop, add one or more branches, and manage each branch service catalogue from the Services tab. Booking, job and invoice features will be connected when their backend APIs are ready.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // REUSABLE WIDGETS
+  // ------------------------------------------------------------
 
   Widget _pageLayout({required Widget child}) {
     return SingleChildScrollView(
@@ -1352,30 +1425,25 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _emptyCard(IconData icon, String title, String subtitle) {
+    return _card(
+      child: Column(
         children: [
-          Icon(icon, size: 19, color: workshopBlue),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 105,
-            child: Text(
-              label,
-              style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+          Icon(icon, size: 42, color: workshopBlue),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: workshopNavy,
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: workshopNavy,
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
           ),
         ],
       ),
@@ -1383,24 +1451,9 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
   }
 
   Widget _statusBadge(String status) {
-    Color color;
+    final active = status == 'Active';
 
-    switch (status) {
-      case 'Completed':
-        color = Colors.green;
-        break;
-      case 'Rejected':
-        color = Colors.red;
-        break;
-      case 'Pending':
-        color = Colors.orange;
-        break;
-      case 'In Progress':
-        color = Colors.deepPurple;
-        break;
-      default:
-        color = workshopBlue;
-    }
+    final color = active ? Colors.green : Colors.grey;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -1419,278 +1472,14 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _emptyCard(IconData icon, String title, String subtitle) {
-    return _card(
-      child: Column(
-        children: [
-          Icon(icon, size: 40, color: workshopBlue),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: workshopNavy,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
   static const TextStyle _headingStyle = TextStyle(
     fontSize: 19,
     fontWeight: FontWeight.bold,
     color: workshopNavy,
   );
-}
 
-// =========================================================
-// WORKSHOP SUPPORT SCREENS
-// =========================================================
-
-class _WorkshopInvoicesPage extends StatelessWidget {
-  final List<Map<String, dynamic>> bookings;
-  final ValueChanged<Map<String, dynamic>> onGenerate;
-
-  const _WorkshopInvoicesPage({
-    required this.bookings,
-    required this.onGenerate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: workshopBackground,
-      appBar: AppBar(
-        title: const Text('Service Invoices'),
-        backgroundColor: Colors.white,
-        foregroundColor: workshopNavy,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text(
-            'Completed Services',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-              color: workshopNavy,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Generate a demo invoice for a completed service.',
-            style: TextStyle(color: Colors.blueGrey),
-          ),
-          const SizedBox(height: 16),
-          if (bookings.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text('No completed services are ready for invoicing.'),
-              ),
-            )
-          else
-            ...bookings.map(
-              (booking) => Card(
-                color: Colors.white,
-                elevation: 0,
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking['service'].toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: workshopNavy,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text('${booking['customer']} • ${booking['vehicle']}'),
-                      Text('Amount: Rs. ${booking['amount'] ?? 0}'),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Invoice: ${booking['invoiceStatus'] ?? 'Not Generated'}',
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: booking['invoiceStatus'] == 'Generated'
-                                ? null
-                                : () {
-                                    onGenerate(booking);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Demo invoice generated.',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                            child: Text(
-                              booking['invoiceStatus'] == 'Generated'
-                                  ? 'Generated'
-                                  : 'Generate',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WorkshopNotificationsPage extends StatelessWidget {
-  final List<String> messages;
-
-  const _WorkshopNotificationsPage({required this.messages});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: workshopBackground,
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        backgroundColor: Colors.white,
-        foregroundColor: workshopNavy,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text(
-            'Workshop Updates',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-              color: workshopNavy,
-            ),
-          ),
-          const SizedBox(height: 14),
-          if (messages.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text('No current workshop notifications.'),
-              ),
-            )
-          else
-            ...messages.map(
-              (message) => Card(
-                color: Colors.white,
-                elevation: 0,
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFFEAF3FF),
-                    child: Icon(
-                      Icons.notifications_active_outlined,
-                      color: workshopBlue,
-                    ),
-                  ),
-                  title: Text(message),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WorkshopHelpPage extends StatelessWidget {
-  const _WorkshopHelpPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: workshopBackground,
-      appBar: AppBar(
-        title: const Text('Help & Support'),
-        backgroundColor: Colors.white,
-        foregroundColor: workshopNavy,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text(
-            'Workshop Help',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-              color: workshopNavy,
-            ),
-          ),
-          const SizedBox(height: 14),
-          _faq(
-            'How do I handle a new booking?',
-            'Open Bookings, review the customer and vehicle details, then accept or reject the request.',
-          ),
-          _faq(
-            'How do I start a service job?',
-            'Accept a booking first. It will appear in Jobs, where you can select Start Job.',
-          ),
-          _faq(
-            'How do I complete a job?',
-            'Open the active job and select Mark as Completed after the work is finished.',
-          ),
-          _faq(
-            'How do I manage workshop services?',
-            'Open Services to add, edit, delete, or temporarily deactivate a service.',
-          ),
-          _faq(
-            'How do I generate an invoice?',
-            'After completing a job, open Profile > Invoices and generate a demo invoice for that service.',
-          ),
-          _faq(
-            'Are changes saved permanently?',
-            'This version stores demo data in memory. Firebase/database integration is required for permanent storage and owner-side synchronization.',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _faq(String question, String answer) {
-    return Card(
-      color: Colors.white,
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ExpansionTile(
-        title: Text(
-          question,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              answer,
-              style: const TextStyle(color: Colors.blueGrey, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  static final ButtonStyle _primaryButtonStyle = ElevatedButton.styleFrom(
+    backgroundColor: workshopBlue,
+    foregroundColor: Colors.white,
+  );
 }
