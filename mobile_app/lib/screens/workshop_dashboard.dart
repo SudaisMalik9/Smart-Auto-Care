@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import '../services/auth_service.dart';
@@ -42,13 +41,11 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
 
   void _message(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  int _id(Map<String, dynamic> item) =>
-      int.parse(item['id'].toString());
+  int _id(Map<String, dynamic> item) => int.parse(item['id'].toString());
 
   Future<void> _loadWorkshopData() async {
     setState(() {
@@ -73,12 +70,12 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         return;
       }
 
-      final previousWorkshopId =
-          selectedWorkshop == null ? null : _id(selectedWorkshop!);
+      final previousWorkshopId = selectedWorkshop == null
+          ? null
+          : _id(selectedWorkshop!);
 
       selectedWorkshop = workshops.firstWhere(
-        (item) => previousWorkshopId != null &&
-            _id(item) == previousWorkshopId,
+        (item) => previousWorkshopId != null && _id(item) == previousWorkshopId,
         orElse: () => workshops.first,
       );
 
@@ -111,12 +108,12 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       return;
     }
 
-    final previousBranchId =
-        selectedBranch == null ? null : _id(selectedBranch!);
+    final previousBranchId = selectedBranch == null
+        ? null
+        : _id(selectedBranch!);
 
     selectedBranch = branches.firstWhere(
-      (item) => previousBranchId != null &&
-          _id(item) == previousBranchId,
+      (item) => previousBranchId != null && _id(item) == previousBranchId,
       orElse: () {
         return branches.firstWhere(
           (item) => item['is_primary'] == true,
@@ -206,27 +203,19 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             children: [
               TextField(
                 controller: name,
-                decoration: const InputDecoration(
-                  labelText: 'Workshop Name *',
-                ),
+                decoration: const InputDecoration(labelText: 'Workshop Name *'),
               ),
               TextField(
                 controller: description,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                ),
+                decoration: const InputDecoration(labelText: 'Description'),
               ),
               TextField(
                 controller: email,
-                decoration: const InputDecoration(
-                  labelText: 'Business Email',
-                ),
+                decoration: const InputDecoration(labelText: 'Business Email'),
               ),
               TextField(
                 controller: phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                ),
+                decoration: const InputDecoration(labelText: 'Phone'),
               ),
             ],
           ),
@@ -435,9 +424,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Price (PKR) *',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Price (PKR) *'),
                 ),
                 TextField(
                   controller: duration,
@@ -449,9 +436,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 TextField(
                   controller: description,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Description'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
@@ -531,16 +516,13 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         );
         _message('Service added successfully.');
       } else {
-        await WorkshopService.updateService(
-          _id(service),
-          {
-            'name': name.text.trim(),
-            'description': description.text.trim(),
-            'price': amount,
-            'estimated_duration_minutes': minutes,
-            'department': departmentId,
-          },
-        );
+        await WorkshopService.updateService(_id(service), {
+          'name': name.text.trim(),
+          'description': description.text.trim(),
+          'price': amount,
+          'estimated_duration_minutes': minutes,
+          'department': departmentId,
+        });
         _message('Service updated successfully.');
       }
 
@@ -556,15 +538,9 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     }
   }
 
-  Future<void> _toggleService(
-    Map<String, dynamic> service,
-    bool active,
-  ) async {
+  Future<void> _toggleService(Map<String, dynamic> service, bool active) async {
     try {
-      await WorkshopService.updateService(
-        _id(service),
-        {'is_active': active},
-      );
+      await WorkshopService.updateService(_id(service), {'is_active': active});
 
       await _loadBranchData();
       _message(active ? 'Service activated.' : 'Service deactivated.');
@@ -578,9 +554,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Service'),
-        content: Text(
-          'Are you sure you want to remove ${service['name']}?',
-        ),
+        content: Text('Are you sure you want to remove ${service['name']}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -588,10 +562,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -671,15 +642,12 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
 
     if (confirmed == true && name.text.trim().isNotEmpty) {
       try {
-        await WorkshopService.updateWorkshop(
-          workshopId,
-          {
-            'name': name.text.trim(),
-            'email': email.text.trim(),
-            'phone': phone.text.trim(),
-            'description': description.text.trim(),
-          },
-        );
+        await WorkshopService.updateWorkshop(workshopId, {
+          'name': name.text.trim(),
+          'email': email.text.trim(),
+          'phone': phone.text.trim(),
+          'description': description.text.trim(),
+        });
         await _loadWorkshopData();
         _message('Workshop information updated.');
       } catch (e) {
@@ -761,16 +729,13 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         address.text.trim().isNotEmpty &&
         city.text.trim().isNotEmpty) {
       try {
-        await WorkshopService.updateBranch(
-          branchId,
-          {
-            'name': name.text.trim(),
-            'address': address.text.trim(),
-            'city': city.text.trim(),
-            'phone': phone.text.trim(),
-            'email': email.text.trim(),
-          },
-        );
+        await WorkshopService.updateBranch(branchId, {
+          'name': name.text.trim(),
+          'address': address.text.trim(),
+          'city': city.text.trim(),
+          'phone': phone.text.trim(),
+          'email': email.text.trim(),
+        });
         await _loadWorkshopData();
         _message('Branch information updated.');
       } catch (e) {
@@ -804,10 +769,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -885,11 +847,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? _errorView()
-                : IndexedStack(
-                    index: _selectedIndex,
-                    children: pages,
-                  ),
+            ? _errorView()
+            : IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -899,18 +858,12 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           setState(() => _selectedIndex = index);
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             label: 'Bookings',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.work_outline),
-            label: 'Jobs',
-          ),
+          NavigationDestination(icon: Icon(Icons.work_outline), label: 'Jobs'),
           NavigationDestination(
             icon: Icon(Icons.build_outlined),
             label: 'Services',
@@ -942,10 +895,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              _error ?? '',
-              textAlign: TextAlign.center,
-            ),
+            Text(_error ?? '', textAlign: TextAlign.center),
             const SizedBox(height: 18),
             ElevatedButton(
               onPressed: _loadWorkshopData,
@@ -967,11 +917,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
         child: Column(
           children: [
             const SizedBox(height: 50),
-            const Icon(
-              Icons.storefront,
-              size: 75,
-              color: workshopBlue,
-            ),
+            const Icon(Icons.storefront, size: 75, color: workshopBlue),
             const SizedBox(height: 18),
             const Text(
               'Welcome, Workshop Owner!',
@@ -1023,8 +969,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           const Text('Workshop Overview', style: _headingStyle),
           const SizedBox(height: 13),
           GridView.count(
-            crossAxisCount:
-                MediaQuery.of(context).size.width > 650 ? 3 : 2,
+            crossAxisCount: MediaQuery.of(context).size.width > 650 ? 3 : 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
@@ -1043,8 +988,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
               ),
               _statCard(
                 'Active Services',
-                services.where((s) => s['is_active'] == true).length
-                    .toString(),
+                services.where((s) => s['is_active'] == true).length.toString(),
                 Icons.build_outlined,
               ),
             ],
@@ -1194,10 +1138,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           ),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.blueGrey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
         ],
       ),
@@ -1318,10 +1259,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 const SizedBox(height: 5),
                 Text(
                   service['description']?.toString() ?? '',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.blueGrey,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -1333,10 +1271,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                 ),
                 Text(
                   '${service['estimated_duration_minutes'] ?? '-'} minutes • $departmentName',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.blueGrey,
-                  ),
+                  style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
                 ),
               ],
             ),
@@ -1357,14 +1292,8 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
                   }
                 },
                 itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete'),
-                  ),
+                  PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
                 ],
               ),
             ],
@@ -1395,11 +1324,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           const CircleAvatar(
             radius: 48,
             backgroundColor: Color(0xFFEAF3FF),
-            child: Icon(
-              Icons.storefront,
-              color: workshopBlue,
-              size: 52,
-            ),
+            child: Icon(Icons.storefront, color: workshopBlue, size: 52),
           ),
           const SizedBox(height: 15),
           Text(
@@ -1437,26 +1362,14 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
             'Refresh Workshop Data',
             _loadWorkshopData,
           ),
-          _profileOption(
-            Icons.help_outline,
-            'Help & Support',
-            _showHelp,
-          ),
-          _profileOption(
-            Icons.logout,
-            'Log Out',
-            _confirmLogout,
-          ),
+          _profileOption(Icons.help_outline, 'Help & Support', _showHelp),
+          _profileOption(Icons.logout, 'Log Out', _confirmLogout),
         ],
       ),
     );
   }
 
-  Widget _profileOption(
-    IconData icon,
-    String title,
-    VoidCallback? onTap,
-  ) {
+  Widget _profileOption(IconData icon, String title, VoidCallback? onTap) {
     return Card(
       color: Colors.white,
       elevation: 0,
@@ -1508,10 +1421,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _card({
-    required Widget child,
-    EdgeInsetsGeometry? margin,
-  }) {
+  Widget _card({required Widget child, EdgeInsetsGeometry? margin}) {
     return Container(
       width: double.infinity,
       margin: margin,
@@ -1525,11 +1435,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     );
   }
 
-  Widget _emptyCard(
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
+  Widget _emptyCard(IconData icon, String title, String subtitle) {
     return _card(
       child: Column(
         children: [
@@ -1547,10 +1453,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.blueGrey,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
           ),
         ],
       ),
@@ -1563,10 +1466,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     final color = active ? Colors.green : Colors.grey;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
@@ -1588,8 +1488,7 @@ class _WorkshopDashboardState extends State<WorkshopDashboard> {
     color: workshopNavy,
   );
 
-  static final ButtonStyle _primaryButtonStyle =
-      ElevatedButton.styleFrom(
+  static final ButtonStyle _primaryButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: workshopBlue,
     foregroundColor: Colors.white,
   );

@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -9,12 +8,10 @@ class WebsiteQrScannerScreen extends StatefulWidget {
   const WebsiteQrScannerScreen({super.key});
 
   @override
-  State<WebsiteQrScannerScreen> createState() =>
-      _WebsiteQrScannerScreenState();
+  State<WebsiteQrScannerScreen> createState() => _WebsiteQrScannerScreenState();
 }
 
-class _WebsiteQrScannerScreenState
-    extends State<WebsiteQrScannerScreen> {
+class _WebsiteQrScannerScreenState extends State<WebsiteQrScannerScreen> {
   String? _scannedCode;
   String _message = 'Scan the QR code displayed on the website.';
   String _ownerName = '';
@@ -82,10 +79,7 @@ class _WebsiteQrScannerScreenState
     try {
       await ApiService.post(
         '${ApiConfig.baseUrl}auth/website-pairing/approve/',
-        {
-          'code': code,
-          'approved': approved,
-        },
+        {'code': code, 'approved': approved},
       );
 
       if (!mounted) return;
@@ -126,9 +120,7 @@ class _WebsiteQrScannerScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Website QR Login'),
-      ),
+      appBar: AppBar(title: const Text('Website QR Login')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -144,16 +136,10 @@ class _WebsiteQrScannerScreenState
               const Text(
                 'Connect to Website',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text(
-                _message,
-                textAlign: TextAlign.center,
-              ),
+              Text(_message, textAlign: TextAlign.center),
               const SizedBox(height: 24),
 
               if (_scannedCode == null) ...[
@@ -161,9 +147,7 @@ class _WebsiteQrScannerScreenState
                   borderRadius: BorderRadius.circular(16),
                   child: SizedBox(
                     height: 320,
-                    child: MobileScanner(
-                      onDetect: _onDetect,
-                    ),
+                    child: MobileScanner(onDetect: _onDetect),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -194,9 +178,7 @@ class _WebsiteQrScannerScreenState
                         Text('Workshop Owner: $_ownerName'),
                         const SizedBox(height: 8),
                         if (_workshops.isNotEmpty)
-                          ..._workshops.map(
-                            (name) => Text(name.toString()),
-                          ),
+                          ..._workshops.map((name) => Text(name.toString())),
                         const SizedBox(height: 16),
                         const Text(
                           'Do you approve signing in to the Smart Auto Care website using your account?',
@@ -234,15 +216,8 @@ class _WebsiteQrScannerScreenState
                     ),
                   ),
                 ] else ...[
-                  const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 45,
-                  ),
-                  const Text(
-                    'Approved',
-                    textAlign: TextAlign.center,
-                  ),
+                  const Icon(Icons.check_circle, color: Colors.green, size: 45),
+                  const Text('Approved', textAlign: TextAlign.center),
                 ],
                 const SizedBox(height: 12),
                 TextButton(

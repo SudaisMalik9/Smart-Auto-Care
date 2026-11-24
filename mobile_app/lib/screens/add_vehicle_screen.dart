@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import '../services/customer_service.dart';
@@ -54,9 +53,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
     if (_selectedYear == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select the manufacturing year.'),
-        ),
+        const SnackBar(content: Text('Please select the manufacturing year.')),
       );
       return;
     }
@@ -71,8 +68,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         make: _makeController.text.trim(),
         model: _modelController.text.trim(),
         year: _selectedYear!,
-        registrationNumber:
-            _registrationController.text.trim().toUpperCase(),
+        registrationNumber: _registrationController.text.trim().toUpperCase(),
         color: _colorController.text.trim(),
         fuelType: _fuelType,
         transmission: _transmission,
@@ -120,10 +116,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         ),
         title: const Text(
           'Add Vehicle',
-          style: TextStyle(
-            color: vehicleNavy,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: vehicleNavy, fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -142,10 +135,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF1565C0),
-                            Color(0xFF42A5F5),
-                          ],
+                          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
                         ),
                         borderRadius: BorderRadius.circular(22),
                       ),
@@ -457,11 +447,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           ? TextCapitalization.characters
           : TextCapitalization.words,
       keyboardType: numberOnly ? TextInputType.number : TextInputType.text,
-      decoration: _decoration(
-        label: label,
-        hint: hint,
-        icon: icon,
-      ),
+      decoration: _decoration(label: label, hint: hint, icon: icon),
       validator: (value) {
         final text = value?.trim() ?? '';
 
@@ -493,16 +479,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     return DropdownButtonFormField<T>(
       initialValue: value,
       isExpanded: true,
-      decoration: _decoration(
-        label: label,
-        hint: 'Select $label',
-        icon: icon,
-      ),
+      decoration: _decoration(label: label, hint: 'Select $label', icon: icon),
       items: items.map((item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(itemLabel(item)),
-        );
+        return DropdownMenuItem<T>(value: item, child: Text(itemLabel(item)));
       }).toList(),
       onChanged: onChanged,
       validator: (selected) {
@@ -525,10 +504,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       prefixIcon: Icon(icon, color: vehicleBlue),
       filled: true,
       fillColor: const Color(0xFFFAFBFD),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 17,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
         borderSide: const BorderSide(color: Color(0xFFD8E0E9)),
@@ -539,10 +515,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(13),
-        borderSide: const BorderSide(
-          color: vehicleBlue,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: vehicleBlue, width: 1.5),
       ),
     );
   }

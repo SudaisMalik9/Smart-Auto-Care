@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import '../services/auth_service.dart';
@@ -66,18 +65,14 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'WORKSHOP_OWNER':
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const WorkshopDashboard(),
-            ),
+            MaterialPageRoute(builder: (context) => const WorkshopDashboard()),
           );
           break;
 
         case 'ADMIN':
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const AdminDashboard(),
-            ),
+            MaterialPageRoute(builder: (context) => const AdminDashboard()),
           );
           break;
 
@@ -95,9 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
         default:
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Your account role is not supported yet: $role',
-              ),
+              content: Text('Your account role is not supported yet: $role'),
             ),
           );
       }
@@ -107,10 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final message = error.toString().replaceFirst('Exception: ', '');
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red.shade700,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red.shade700),
       );
     } finally {
       if (mounted) {
@@ -125,9 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ForgotPasswordScreen(
-          initialEmail: _emailController.text.trim(),
-        ),
+        builder: (context) =>
+            ForgotPasswordScreen(initialEmail: _emailController.text.trim()),
       ),
     );
   }
@@ -172,10 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Your car, our responsibility',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                     ),
 
                     const SizedBox(height: 42),
@@ -195,10 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Log in to manage your vehicle and services.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                     ),
 
                     const SizedBox(height: 28),
@@ -370,10 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       'Secure vehicle care, all in one place.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 12),
                     ),
 
                     const SizedBox(height: 20),

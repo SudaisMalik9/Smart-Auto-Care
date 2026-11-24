@@ -1,4 +1,3 @@
-
 import 'api_config.dart';
 import 'api_service.dart';
 
@@ -17,9 +16,7 @@ class WorkshopService {
       throw Exception('The server returned an unexpected list response.');
     }
 
-    return data
-        .map((item) => Map<String, dynamic>.from(item as Map))
-        .toList();
+    return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
   }
 
   static Map<String, dynamic> _asMap(dynamic response) {
@@ -59,10 +56,7 @@ class WorkshopService {
     int workshopId,
     Map<String, dynamic> data,
   ) async {
-    final response = await ApiService.patch(
-      '$_base$workshopId/',
-      data,
-    );
+    final response = await ApiService.patch('$_base$workshopId/', data);
 
     return _asMap(response);
   }
@@ -75,12 +69,8 @@ class WorkshopService {
   // BRANCHES
   // ------------------------------------------------------------
 
-  static Future<List<Map<String, dynamic>>> getBranches(
-    int workshopId,
-  ) async {
-    final response = await ApiService.get(
-      '$_base$workshopId/branches/',
-    );
+  static Future<List<Map<String, dynamic>>> getBranches(int workshopId) async {
+    final response = await ApiService.get('$_base$workshopId/branches/');
 
     return _asList(response);
   }
@@ -94,17 +84,14 @@ class WorkshopService {
     String email = '',
     bool isPrimary = false,
   }) async {
-    final response = await ApiService.post(
-      '$_base$workshopId/branches/',
-      {
-        'name': name,
-        'address': address,
-        'city': city,
-        'phone': phone,
-        'email': email,
-        'is_primary': isPrimary,
-      },
-    );
+    final response = await ApiService.post('$_base$workshopId/branches/', {
+      'name': name,
+      'address': address,
+      'city': city,
+      'phone': phone,
+      'email': email,
+      'is_primary': isPrimary,
+    });
 
     return _asMap(response);
   }
@@ -180,9 +167,7 @@ class WorkshopService {
   // DEPARTMENTS
   // ------------------------------------------------------------
 
-  static Future<List<Map<String, dynamic>>> getDepartments(
-    int branchId,
-  ) async {
+  static Future<List<Map<String, dynamic>>> getDepartments(int branchId) async {
     final response = await ApiService.get(
       '${_base}branches/$branchId/departments/',
     );
@@ -197,10 +182,7 @@ class WorkshopService {
   }) async {
     final response = await ApiService.post(
       '${_base}branches/$branchId/departments/',
-      {
-        'name': name,
-        'description': description,
-      },
+      {'name': name, 'description': description},
     );
 
     return _asMap(response);
@@ -226,9 +208,7 @@ class WorkshopService {
   // SERVICES
   // ------------------------------------------------------------
 
-  static Future<List<Map<String, dynamic>>> getServices(
-    int branchId,
-  ) async {
+  static Future<List<Map<String, dynamic>>> getServices(int branchId) async {
     final response = await ApiService.get(
       '${_base}branches/$branchId/services/',
     );

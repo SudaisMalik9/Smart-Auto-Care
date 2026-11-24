@@ -1,13 +1,10 @@
-
 import 'api_config.dart';
 import 'api_service.dart';
 
 class CustomerService {
   // Get the logged-in customer's profile.
   static Future<Map<String, dynamic>> getCustomerProfile() async {
-    final response = await ApiService.get(
-      ApiConfig.customerProfile,
-    );
+    final response = await ApiService.get(ApiConfig.customerProfile);
 
     return Map<String, dynamic>.from(response);
   }
@@ -24,19 +21,14 @@ class CustomerService {
     if (address != null) data['address'] = address;
     if (city != null) data['city'] = city;
 
-    final response = await ApiService.patch(
-      ApiConfig.customerProfile,
-      data,
-    );
+    final response = await ApiService.patch(ApiConfig.customerProfile, data);
 
     return Map<String, dynamic>.from(response);
   }
 
   // Get vehicles belonging to the logged-in customer.
   static Future<List<Map<String, dynamic>>> getVehicles() async {
-    final response = await ApiService.get(
-      ApiConfig.customerVehicles,
-    );
+    final response = await ApiService.get(ApiConfig.customerVehicles);
 
     if (response is! List) {
       throw Exception('Invalid vehicles response from server.');
@@ -57,26 +49,21 @@ class CustomerService {
     required String fuelType,
     required String transmission,
   }) async {
-    final response = await ApiService.post(
-      ApiConfig.customerVehicles,
-      {
-        'make': make,
-        'model': model,
-        'year': year,
-        'registration_number': registrationNumber,
-        'color': color,
-        'fuel_type': fuelType.toUpperCase(),
-        'transmission': transmission.toUpperCase(),
-      },
-    );
+    final response = await ApiService.post(ApiConfig.customerVehicles, {
+      'make': make,
+      'model': model,
+      'year': year,
+      'registration_number': registrationNumber,
+      'color': color,
+      'fuel_type': fuelType.toUpperCase(),
+      'transmission': transmission.toUpperCase(),
+    });
 
     return Map<String, dynamic>.from(response);
   }
 
   // Remove a vehicle from the logged-in customer's account.
   static Future<void> deleteVehicle(int vehicleId) async {
-    await ApiService.delete(
-      '${ApiConfig.customerVehicles}$vehicleId/delete/',
-    );
+    await ApiService.delete('${ApiConfig.customerVehicles}$vehicleId/delete/');
   }
 }

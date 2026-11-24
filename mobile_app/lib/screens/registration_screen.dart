@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import '../services/auth_service.dart';
@@ -144,9 +143,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       String? phoneWarning;
 
       try {
-        await AuthService.updateCustomerPhone(
-          _phoneController.text.trim(),
-        );
+        await AuthService.updateCustomerPhone(_phoneController.text.trim());
       } catch (error) {
         phoneWarning =
             'Your account was created, but your phone number could not '
@@ -157,9 +154,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => const VehicleOwnerDashboard(),
-        ),
+        MaterialPageRoute(builder: (context) => const VehicleOwnerDashboard()),
         (route) => false,
       );
 
@@ -204,24 +199,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFFD8DEE8)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: _primaryBlue,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: _primaryBlue, width: 1.5),
       ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 
@@ -313,10 +300,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const Text(
                       'Create your Vehicle Owner account to get started.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blueGrey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                     ),
                     const SizedBox(height: 30),
 
@@ -424,8 +408,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _obscureConfirmPassword =
-                                !_obscureConfirmPassword;
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
                           });
                         },
                       ),

@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import 'add_vehicle_screen.dart';
@@ -15,8 +14,7 @@ class VehicleOwnerDashboard extends StatefulWidget {
   const VehicleOwnerDashboard({super.key});
 
   @override
-  State<VehicleOwnerDashboard> createState() =>
-      _VehicleOwnerDashboardState();
+  State<VehicleOwnerDashboard> createState() => _VehicleOwnerDashboardState();
 }
 
 class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
@@ -52,10 +50,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   }
 
   Future<void> _loadCustomerData() async {
-    await Future.wait([
-      _loadCustomerProfile(),
-      _loadCustomerVehicles(),
-    ]);
+    await Future.wait([_loadCustomerProfile(), _loadCustomerVehicles()]);
   }
 
   Future<void> _loadCustomerProfile() async {
@@ -95,8 +90,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         _vehicles = vehicles.map((vehicle) {
           return {
             'id': vehicle['id'],
-            'registrationNumber':
-                vehicle['registration_number'] ?? '',
+            'registrationNumber': vehicle['registration_number'] ?? '',
             'make': vehicle['make'] ?? '',
             'model': vehicle['model'] ?? '',
             'year': vehicle['year'] ?? '',
@@ -121,9 +115,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   Future<void> _openAddVehicle() async {
     final vehicle = await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddVehicleScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddVehicleScreen()),
     );
 
     if (!mounted || vehicle == null) return;
@@ -138,9 +130,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   Future<void> _openFindWorkshop() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const FindWorkshopScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const FindWorkshopScreen()),
     );
 
     if (!mounted || result == null) return;
@@ -160,9 +150,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   Future<void> _openBookService() async {
     final result = await Navigator.push<dynamic>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const BookServiceScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const BookServiceScreen()),
     );
 
     if (!mounted || result == null || result is! Map) return;
@@ -192,8 +180,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     return status != 'cancelled' && status != 'completed';
   }
 
-  int get _activeBookingCount =>
-      _bookings.where(_isActiveBooking).length;
+  int get _activeBookingCount => _bookings.where(_isActiveBooking).length;
 
   void _openServiceHistory() {
     Navigator.push(
@@ -227,10 +214,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               const SizedBox(height: 8),
               const Text(
                 'This booking is not yet stored permanently on the server.',
-                style: TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.blueGrey, fontSize: 12),
               ),
             ],
           ),
@@ -271,9 +255,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             ),
           ),
           Expanded(
-            child: Text(
-              value?.isNotEmpty == true ? value! : 'Not provided',
-            ),
+            child: Text(value?.isNotEmpty == true ? value! : 'Not provided'),
           ),
         ],
       ),
@@ -296,10 +278,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: dashboardNavy,
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, color: dashboardNavy),
           onPressed: () => Navigator.maybePop(context),
         ),
         title: const Row(
@@ -333,10 +312,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
@@ -375,10 +351,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
         final wide = constraints.maxWidth >= 850;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 22,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1150),
@@ -396,10 +369,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                   const SizedBox(height: 8),
                   const Text(
                     'Manage your vehicles and keep them running smoothly.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blueGrey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                   ),
                   const SizedBox(height: 26),
                   _buildBanner(),
@@ -512,16 +482,17 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     _emptyCard(
                       icon: Icons.calendar_month_outlined,
                       title: 'No upcoming bookings',
-                      subtitle:
-                          'Your future appointments will appear here.',
+                      subtitle: 'Your future appointments will appear here.',
                     )
                   else
-                    ..._bookings.take(2).map(
-                      (booking) => _BookingTile(
-                        booking: booking,
-                        onTap: () => _showBookingDetails(booking),
-                      ),
-                    ),
+                    ..._bookings
+                        .take(2)
+                        .map(
+                          (booking) => _BookingTile(
+                            booking: booking,
+                            onTap: () => _showBookingDetails(booking),
+                          ),
+                        ),
                   const SizedBox(height: 26),
                   const Text(
                     'Recent Activity',
@@ -536,13 +507,12 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                     _emptyCard(
                       icon: Icons.history_rounded,
                       title: 'No recent activity',
-                      subtitle:
-                          'Your completed services will appear here.',
+                      subtitle: 'Your completed services will appear here.',
                     )
                   else
-                    ..._activities.take(4).map(
-                      (activity) => _ActivityTile(activity: activity),
-                    ),
+                    ..._activities
+                        .take(4)
+                        .map((activity) => _ActivityTile(activity: activity)),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -559,10 +529,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1565C0),
-            Color(0xFF42A5F5),
-          ],
+          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
         ),
         borderRadius: BorderRadius.circular(23),
       ),
@@ -584,20 +551,13 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 SizedBox(height: 10),
                 Text(
                   'Reliable care, all in one place.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ],
             ),
           ),
           SizedBox(width: 15),
-          Icon(
-            Icons.car_repair_rounded,
-            size: 60,
-            color: Colors.white,
-          ),
+          Icon(Icons.car_repair_rounded, size: 60, color: Colors.white),
         ],
       ),
     );
@@ -622,95 +582,85 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
               ),
             )
           : _vehicles.isEmpty
-              ? _emptyCard(
-                  icon: Icons.directions_car_outlined,
-                  title: 'No vehicles registered',
-                  subtitle:
-                      'Add your first vehicle to get started.',
-                )
-              : Column(
-                  children: _vehicles.map((vehicle) {
-                    final year = vehicle['year']?.toString() ?? '';
-                    final color = vehicle['color']?.toString() ?? '';
-                    final fuel = vehicle['fuelType']?.toString() ?? '';
-                    final transmission =
-                        vehicle['transmission']?.toString() ?? '';
-                    final id = int.tryParse(
-                      vehicle['id']?.toString() ?? '',
-                    );
-                    final isDeleting =
-                        id != null && _deletingVehicleIds.contains(id);
+          ? _emptyCard(
+              icon: Icons.directions_car_outlined,
+              title: 'No vehicles registered',
+              subtitle: 'Add your first vehicle to get started.',
+            )
+          : Column(
+              children: _vehicles.map((vehicle) {
+                final year = vehicle['year']?.toString() ?? '';
+                final color = vehicle['color']?.toString() ?? '';
+                final fuel = vehicle['fuelType']?.toString() ?? '';
+                final transmission = vehicle['transmission']?.toString() ?? '';
+                final id = int.tryParse(vehicle['id']?.toString() ?? '');
+                final isDeleting =
+                    id != null && _deletingVehicleIds.contains(id);
 
-                    return Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      margin: const EdgeInsets.only(bottom: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                        side: const BorderSide(
-                          color: Color(0xFFE5EAF0),
-                        ),
+                return Card(
+                  color: Colors.white,
+                  elevation: 0,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    side: const BorderSide(color: Color(0xFFE5EAF0)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(18),
+                    leading: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF3FF),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(18),
-                        leading: Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEAF3FF),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(
-                            Icons.directions_car_filled_rounded,
-                            color: dashboardBlue,
-                            size: 29,
-                          ),
-                        ),
-                        title: Text(
-                          '${vehicle['make']} ${vehicle['model']}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: dashboardNavy,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            '${vehicle['registrationNumber']}\n'
-                            '$year • $color\n'
-                            '$fuel • $transmission',
-                          ),
-                        ),
-                        isThreeLine: true,
-                        trailing: isDeleting
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : IconButton(
-                                tooltip: 'Delete vehicle',
-                                icon: const Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: Colors.redAccent,
-                                ),
-                                onPressed: id == null
-                                    ? null
-                                    : () => _confirmDeleteVehicle(vehicle),
-                              ),
+                      child: const Icon(
+                        Icons.directions_car_filled_rounded,
+                        color: dashboardBlue,
+                        size: 29,
                       ),
-                    );
-                  }).toList(),
-                ),
+                    ),
+                    title: Text(
+                      '${vehicle['make']} ${vehicle['model']}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: dashboardNavy,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${vehicle['registrationNumber']}\n'
+                        '$year • $color\n'
+                        '$fuel • $transmission',
+                      ),
+                    ),
+                    isThreeLine: true,
+                    trailing: isDeleting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : IconButton(
+                            tooltip: 'Delete vehicle',
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: id == null
+                                ? null
+                                : () => _confirmDeleteVehicle(vehicle),
+                          ),
+                  ),
+                );
+              }).toList(),
+            ),
     );
   }
 
   void _confirmDeleteVehicle(Map<String, dynamic> vehicle) {
-    final vehicleId = int.tryParse(
-      vehicle['id']?.toString() ?? '',
-    );
+    final vehicleId = int.tryParse(vehicle['id']?.toString() ?? '');
 
     if (vehicleId == null) {
       _showMessage('Invalid vehicle ID. Please refresh the vehicle list.');
@@ -736,10 +686,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 Navigator.pop(dialogContext);
                 await _deleteVehicle(vehicleId);
               },
-              child: const Text(
-                'Remove',
-                style: TextStyle(color: Colors.red),
-              ),
+              child: const Text('Remove', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -776,8 +723,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   // BOOKINGS PAGE
 
   Widget _buildBookingsPage() {
-    final activeBookings =
-        _bookings.where(_isActiveBooking).toList();
+    final activeBookings = _bookings.where(_isActiveBooking).toList();
 
     final pastBookings = _bookings
         .where((booking) => !_isActiveBooking(booking))
@@ -807,8 +753,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             _emptyCard(
               icon: Icons.calendar_month_outlined,
               title: 'No upcoming bookings',
-              subtitle:
-                  'Your future appointments will appear here.',
+              subtitle: 'Your future appointments will appear here.',
             )
           else
             ...activeBookings.map(
@@ -831,8 +776,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             _emptyCard(
               icon: Icons.history_rounded,
               title: 'No past bookings',
-              subtitle:
-                  'Cancelled or completed bookings will appear here.',
+              subtitle: 'Cancelled or completed bookings will appear here.',
             )
           else
             ...pastBookings.map(
@@ -845,10 +789,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
           const Text(
             'Note: Booking records are currently held only in this app session. '
             'Permanent booking storage will be connected when the booking API is ready.',
-            style: TextStyle(
-              color: Colors.blueGrey,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.blueGrey, fontSize: 12),
           ),
         ],
       ),
@@ -869,9 +810,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFE5EAF0),
-              ),
+              border: Border.all(color: const Color(0xFFE5EAF0)),
             ),
             child: Column(
               children: [
@@ -896,26 +835,23 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _ownerEmail.isEmpty
-                      ? 'Email not provided'
-                      : _ownerEmail,
+                  _ownerEmail.isEmpty ? 'Email not provided' : _ownerEmail,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.blueGrey),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  _ownerPhone.isEmpty
-                      ? 'Phone not provided'
-                      : _ownerPhone,
+                  _ownerPhone.isEmpty ? 'Phone not provided' : _ownerPhone,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.blueGrey),
                 ),
                 if (_ownerAddress.isNotEmpty || _ownerCity.isNotEmpty) ...[
                   const SizedBox(height: 5),
                   Text(
-                    [_ownerAddress, _ownerCity]
-                        .where((value) => value.isNotEmpty)
-                        .join(', '),
+                    [
+                      _ownerAddress,
+                      _ownerCity,
+                    ].where((value) => value.isNotEmpty).join(', '),
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.blueGrey),
                   ),
@@ -1004,24 +940,18 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
     setState(() {
       _bookingNotifications =
           result['bookingNotifications'] ?? _bookingNotifications;
-      _serviceReminders =
-          result['serviceReminders'] ?? _serviceReminders;
+      _serviceReminders = result['serviceReminders'] ?? _serviceReminders;
       _promotionalNotifications =
-          result['promotionalNotifications'] ??
-              _promotionalNotifications;
+          result['promotionalNotifications'] ?? _promotionalNotifications;
     });
 
-    _showMessage(
-      'Notification preferences updated for this app session.',
-    );
+    _showMessage('Notification preferences updated for this app session.');
   }
 
   void _openHelpSupport() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const _HelpSupportPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const _HelpSupportPage()),
     );
   }
 
@@ -1033,9 +963,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Log Out'),
-          content: const Text(
-            'Do you want to log out of your account?',
-          ),
+          content: const Text('Do you want to log out of your account?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -1099,14 +1027,8 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.blueGrey),
-              ),
-              if (action != null) ...[
-                const SizedBox(height: 18),
-                action,
-              ],
+              Text(subtitle, style: const TextStyle(color: Colors.blueGrey)),
+              if (action != null) ...[const SizedBox(height: 18), action],
               const SizedBox(height: 22),
               child,
             ],
@@ -1147,10 +1069,7 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.blueGrey,
-              height: 1.4,
-            ),
+            style: const TextStyle(color: Colors.blueGrey, height: 1.4),
           ),
         ],
       ),
@@ -1182,9 +1101,8 @@ class _VehicleOwnerDashboardState extends State<VehicleOwnerDashboard> {
   void _showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -1250,10 +1168,7 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
             ),
           ],
         ),
@@ -1316,9 +1231,7 @@ class _QuickAction extends StatelessWidget {
 class _ServiceHistoryPage extends StatelessWidget {
   final List<Map<String, String>> activities;
 
-  const _ServiceHistoryPage({
-    required this.activities,
-  });
+  const _ServiceHistoryPage({required this.activities});
 
   @override
   Widget build(BuildContext context) {
@@ -1351,15 +1264,11 @@ class _ServiceHistoryPage extends StatelessWidget {
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(22),
-                child: Text(
-                  'No completed services have been recorded yet.',
-                ),
+                child: Text('No completed services have been recorded yet.'),
               ),
             )
           else
-            ...activities.map(
-              (activity) => _ActivityTile(activity: activity),
-            ),
+            ...activities.map((activity) => _ActivityTile(activity: activity)),
         ],
       ),
     );
@@ -1372,10 +1281,7 @@ class _BookingTile extends StatelessWidget {
   final Map<String, String> booking;
   final VoidCallback onTap;
 
-  const _BookingTile({
-    required this.booking,
-    required this.onTap,
-  });
+  const _BookingTile({required this.booking, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1424,9 +1330,7 @@ class _BookingTile extends StatelessWidget {
 class _ActivityTile extends StatelessWidget {
   final Map<String, String> activity;
 
-  const _ActivityTile({
-    required this.activity,
-  });
+  const _ActivityTile({required this.activity});
 
   @override
   Widget build(BuildContext context) {
@@ -1439,16 +1343,10 @@ class _ActivityTile extends StatelessWidget {
         side: const BorderSide(color: Color(0xFFE5EAF0)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: const CircleAvatar(
           backgroundColor: Color(0xFFE3F4F1),
-          child: Icon(
-            Icons.check_circle_rounded,
-            color: Colors.teal,
-          ),
+          child: Icon(Icons.check_circle_rounded, color: Colors.teal),
         ),
         title: Text(
           activity['service'] ?? 'Service',
@@ -1465,10 +1363,7 @@ class _ActivityTile extends StatelessWidget {
         ),
         trailing: Text(
           activity['date'] ?? '',
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.blueGrey,
-          ),
+          style: const TextStyle(fontSize: 10, color: Colors.blueGrey),
         ),
       ),
     );
@@ -1497,8 +1392,7 @@ class _PersonalInformationPage extends StatefulWidget {
       _PersonalInformationPageState();
 }
 
-class _PersonalInformationPageState
-    extends State<_PersonalInformationPage> {
+class _PersonalInformationPageState extends State<_PersonalInformationPage> {
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   late final TextEditingController _cityController;
@@ -1521,14 +1415,11 @@ class _PersonalInformationPageState
   }
 
   void _save() {
-    Navigator.pop(
-      context,
-      <String, String>{
-        'phone': _phoneController.text.trim(),
-        'address': _addressController.text.trim(),
-        'city': _cityController.text.trim(),
-      },
-    );
+    Navigator.pop(context, <String, String>{
+      'phone': _phoneController.text.trim(),
+      'address': _addressController.text.trim(),
+      'city': _cityController.text.trim(),
+    });
   }
 
   @override
@@ -1567,11 +1458,7 @@ class _PersonalInformationPageState
             Icons.location_on_outlined,
             maxLines: 2,
           ),
-          _buildField(
-            'City',
-            _cityController,
-            Icons.location_city_outlined,
-          ),
+          _buildField('City', _cityController, Icons.location_city_outlined),
           const SizedBox(height: 10),
           SizedBox(
             height: 48,
@@ -1599,9 +1486,7 @@ class _PersonalInformationPageState
           labelText: label,
           filled: true,
           fillColor: const Color(0xFFEFF2F6),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(13)),
         ),
       ),
     );
@@ -1627,15 +1512,11 @@ class _PersonalInformationPageState
           fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(13),
-            borderSide: const BorderSide(
-              color: Color(0xFFE5EAF0),
-            ),
+            borderSide: const BorderSide(color: Color(0xFFE5EAF0)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(13),
-            borderSide: const BorderSide(
-              color: Color(0xFFE5EAF0),
-            ),
+            borderSide: const BorderSide(color: Color(0xFFE5EAF0)),
           ),
         ),
       ),
@@ -1661,8 +1542,7 @@ class _NotificationSettingsPage extends StatefulWidget {
       _NotificationSettingsPageState();
 }
 
-class _NotificationSettingsPageState
-    extends State<_NotificationSettingsPage> {
+class _NotificationSettingsPageState extends State<_NotificationSettingsPage> {
   late bool _bookingNotifications;
   late bool _serviceReminders;
   late bool _promotionalNotifications;
@@ -1677,14 +1557,11 @@ class _NotificationSettingsPageState
   }
 
   void _save() {
-    Navigator.pop(
-      context,
-      <String, bool>{
-        'bookingNotifications': _bookingNotifications,
-        'serviceReminders': _serviceReminders,
-        'promotionalNotifications': _promotionalNotifications,
-      },
-    );
+    Navigator.pop(context, <String, bool>{
+      'bookingNotifications': _bookingNotifications,
+      'serviceReminders': _serviceReminders,
+      'promotionalNotifications': _promotionalNotifications,
+    });
   }
 
   @override
@@ -1750,10 +1627,7 @@ class _NotificationSettingsPageState
           const SizedBox(height: 10),
           const Text(
             'These preferences are currently stored only during this app session.',
-            style: TextStyle(
-              color: Colors.blueGrey,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.blueGrey, fontSize: 12),
           ),
         ],
       ),
@@ -1777,10 +1651,7 @@ class _NotificationSettingsPageState
       ),
       child: SwitchListTile(
         secondary: Icon(icon, color: dashboardBlue),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
         value: value,
         activeThumbColor: dashboardBlue,
@@ -1859,11 +1730,7 @@ class _HelpSupportPage extends StatelessWidget {
               padding: EdgeInsets.all(18),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.support_agent,
-                    color: dashboardBlue,
-                    size: 30,
-                  ),
+                  Icon(Icons.support_agent, color: dashboardBlue, size: 30),
                   SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -1916,10 +1783,7 @@ class _HelpSupportPage extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               answer,
-              style: const TextStyle(
-                color: Colors.blueGrey,
-                height: 1.45,
-              ),
+              style: const TextStyle(color: Colors.blueGrey, height: 1.45),
             ),
           ),
         ],
