@@ -4,9 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Workshop Dashboard | Smart Auto Care</title>
 
     <style>
+        :root {
+            --primary: #1565C0;
+            --navy: #102A43;
+            --background: #F5F7FB;
+            --white: #FFFFFF;
+            --text: #243447;
+            --muted: #718096;
+            --border: #E5EAF1;
+            --light-blue: #EAF2FC;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -14,9 +26,15 @@
             font-family: Arial, sans-serif;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 25px;
+        }
+
         body {
-            background: #f3f6fb;
-            color: #1e293b;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
         }
 
         .layout {
@@ -24,38 +42,76 @@
             min-height: 100vh;
         }
 
+        /* Sidebar */
+
         .sidebar {
-            width: 240px;
-            background: #14213d;
-            color: white;
-            padding: 30px 20px;
+            width: 255px;
+            min-width: 255px;
+            min-height: 100vh;
+            background: var(--navy);
+            color: var(--white);
+            padding: 28px 18px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .sidebar h2 {
+        .brand {
+            padding: 5px 10px 30px;
+            border-bottom: 1px solid #ffffff20;
+            margin-bottom: 28px;
+        }
+
+        .brand h2 {
             font-size: 21px;
-            margin-bottom: 35px;
+            line-height: 1.4;
         }
 
-        .sidebar p {
-            color: #aebbd0;
-            font-size: 13px;
+        .brand span {
+            display: block;
+            color: #AFC5DC;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .nav-heading {
+            color: #AFC5DC;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.2px;
+            padding: 0 12px;
             margin-bottom: 12px;
         }
 
         .nav-item {
             display: block;
-            padding: 13px 15px;
-            margin-bottom: 8px;
+            padding: 12px 14px;
+            margin-bottom: 7px;
             border-radius: 8px;
-            color: #dce5f3;
+            color: #DCE8F5;
             text-decoration: none;
-            background: #203354;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #ffffff15;
         }
 
         .nav-item.active {
-            background: #2563eb;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
+            font-weight: bold;
         }
+
+        .sidebar-note {
+            margin-top: auto;
+            padding: 16px 12px 0;
+            border-top: 1px solid #ffffff20;
+            color: #AFC5DC;
+            font-size: 12px;
+        }
+
+        /* Main Content */
 
         .main {
             flex: 1;
@@ -69,199 +125,540 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
         .topbar h1 {
+            color: var(--navy);
             font-size: 27px;
         }
 
-        .status {
-            background: #fff4d6;
-            color: #8a5a00;
-            padding: 9px 13px;
+        .topbar p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .preview-badge {
+            display: inline-block;
+            background: #FFF3D6;
+            color: #8A5A00;
+            padding: 8px 14px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
         }
 
-        .welcome, .card, .panel {
-            background: white;
-            padding: 23px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px #00000008;
-        }
+        /* Welcome */
 
         .welcome {
-            margin-bottom: 25px;
+            background: linear-gradient(120deg, #102A43, #1565C0);
+            color: var(--white);
+            border-radius: 14px;
+            padding: 28px;
+            margin-bottom: 30px;
         }
 
         .welcome h2 {
-            margin-bottom: 10px;
+            font-size: 23px;
+            margin-bottom: 8px;
         }
 
-        .welcome p, .panel p {
-            color: #64748b;
-            line-height: 1.7;
+        .welcome p {
+            color: #E0EBF8;
+            font-size: 14px;
+            max-width: 700px;
         }
 
-        .section-title {
+        /* Sections */
+
+        .dashboard-section {
+            margin-bottom: 30px;
+            scroll-margin-top: 20px;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-heading h2 {
+            color: var(--navy);
             font-size: 19px;
-            margin-bottom: 15px;
         }
+
+        .section-description {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        /* Overview Cards */
 
         .cards {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 18px;
-            margin-bottom: 28px;
         }
 
-        .card h3 {
-            color: #64748b;
-            font-size: 15px;
-            margin-bottom: 15px;
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px #102A4308;
         }
 
-        .card strong {
-            color: #2563eb;
+        .card-label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
+
+        .card-value {
+            color: var(--primary);
             font-size: 17px;
+            font-weight: bold;
+        }
+
+        .card-description {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Information Panels */
+
+        .panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 23px;
+            box-shadow: 0 3px 12px #102A4308;
+        }
+
+        .panel h3 {
+            color: var(--navy);
+            font-size: 16px;
+            margin-bottom: 8px;
         }
 
         .panel p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .pending-label {
+            display: inline-block;
+            background: var(--light-blue);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
             margin-bottom: 12px;
         }
 
-        .panel p:last-child {
-            margin-bottom: 0;
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
         }
+
+        /* Footer */
 
         .footer {
-            margin-top: 25px;
-            color: #94a3b8;
+            border-top: 1px solid var(--border);
+            margin-top: 35px;
+            padding-top: 18px;
+            color: var(--muted);
             font-size: 12px;
+            text-align: center;
         }
 
-        @media (max-width: 800px) {
+        /* Responsive Layout */
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 220px;
+                min-width: 220px;
+            }
+
+            .main {
+                padding: 22px;
+            }
+
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
             .layout {
                 flex-direction: column;
             }
 
             .sidebar {
                 width: 100%;
+                min-width: 0;
+                min-height: auto;
+                padding: 20px;
             }
 
-            .cards {
-                grid-template-columns: 1fr;
+            .brand {
+                margin-bottom: 18px;
+                padding-bottom: 18px;
+            }
+
+            .nav-item {
+                display: inline-block;
+                margin: 3px;
+                padding: 9px 11px;
+            }
+
+            .nav-heading {
+                margin-top: 10px;
+            }
+
+            .sidebar-note {
+                margin-top: 18px;
             }
 
             .main {
-                padding: 20px;
+                padding: 18px;
+            }
+
+            .topbar h1 {
+                font-size: 23px;
+            }
+
+            .cards,
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome {
+                padding: 22px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="layout">
 
-        <aside class="sidebar">
+<div class="layout">
+
+    <!-- Workshop Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
             <h2>Smart Auto Care</h2>
+            <span>Workshop Management Portal</span>
+        </div>
 
-            <p>WORKSHOP PANEL</p>
+        <p class="nav-heading">WORKSHOP PANEL</p>
 
-            <a href="#" class="nav-item active">Dashboard</a>
-            <a href="#" class="nav-item">Workshop Profile</a>
-            <a href="#" class="nav-item">Bookings</a>
-            <a href="#" class="nav-item">Services</a>
-            <a href="#" class="nav-item">Mechanics</a>
-            <a href="#" class="nav-item">Logout</a>
-        </aside>
+        <nav aria-label="Workshop navigation">
+            <a href="#overview" class="nav-item active">Dashboard</a>
+            <a href="#workshop-profile" class="nav-item">Workshop Profile</a>
+            <a href="#bookings" class="nav-item">Bookings</a>
+            <a href="#services" class="nav-item">Services</a>
+            <a href="#mechanics" class="nav-item">Mechanics & Staff</a>
+            <a href="#notifications" class="nav-item">Notifications</a>
+            <a href="#settings" class="nav-item">Settings</a>
+        </nav>
 
-        <main class="main">
+        <div class="sidebar-note">
+            <p>Workshop Owner Portal</p>
+            <p>Shared backend integration pending.</p>
+        </div>
 
-            <header class="topbar">
+    </aside>
+
+    <!-- Main Dashboard -->
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
                 <h1>Workshop Dashboard</h1>
-                <span class="status">Development Preview</span>
-            </header>
+                <p>Manage your workshop activities in one place.</p>
+            </div>
 
-            <section class="welcome">
-                <h2>Welcome, Workshop Manager!</h2>
-                <p>
-                    Manage your workshop activities from one place.
-                    Your workshop information and activity data will
-                    appear here after the shared backend API is connected.
-                </p>
-            </section>
+            <span class="preview-badge">Development Preview</span>
+        </header>
 
-            <h2 class="section-title">Workshop Overview</h2>
+        <!-- Welcome -->
 
-            <section class="cards">
-                <div class="card">
-                    <h3>Total Bookings</h3>
-                    <strong>Awaiting API</strong>
-                </div>
-
-                <div class="card">
-                    <h3>Available Services</h3>
-                    <strong>Awaiting API</strong>
-                </div>
-
-                <div class="card">
-                    <h3>Workshop Mechanics</h3>
-                    <strong>Awaiting API</strong>
-                </div>
-            </section>
-
-<h2 class="section-title">Dashboard Status</h2>
-
-<section class="panel">
-    <p>
-        <strong>Loading State:</strong>
-        Workshop information will load when the shared backend API is connected.
-    </p>
-
-    <p>
-        <strong>Empty State:</strong>
-        No workshop activity is available yet.
-    </p>
-
-    <p>
-        <strong>Error State:</strong>
-        Backend connection errors will be displayed here.
-    </p>
-</section>
-
-
-            <h2 class="section-title">Workshop Management</h2>
-
-            <section class="panel">
-                <p>
-                    <strong>Workshop Profile:</strong>
-                    Workshop details will load from the shared backend.
-                </p>
-
-                <p>
-                    <strong>Bookings:</strong>
-                    Customer booking information will appear after API integration.
-                </p>
-
-                <p>
-                    <strong>Services:</strong>
-                    Workshop services will be managed using backend data.
-                </p>
-
-                <p>
-                    <strong>Mechanics:</strong>
-                    Mechanic information will be displayed after API integration.
-                </p>
-            </section>
-
-            <p class="footer">
-                Smart Auto Care &copy; 2026 | Workshop Dashboard
+        <section class="welcome">
+            <h2>Welcome, Workshop Owner!</h2>
+            <p>
+                This is your central workshop management area.
+                Workshop information, bookings, services and staff
+                details will appear here after connection with the
+                shared Smart Auto Care backend.
             </p>
+        </section>
 
-        </main>
-    </div>
+        <!-- Overview -->
+
+        <section class="dashboard-section" id="overview">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Workshop Overview</h2>
+                    <p class="section-description">
+                        Summary of your workshop activities.
+                    </p>
+                </div>
+            </div>
+
+            <div class="cards">
+
+                <article class="card">
+                    <p class="card-label">Total Bookings</p>
+                    <p class="card-value">Awaiting API</p>
+                    <p class="card-description">
+                        Booking statistics will load from the backend.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <p class="card-label">Available Services</p>
+                    <p class="card-value">Awaiting API</p>
+                    <p class="card-description">
+                        Workshop service information will appear here.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <p class="card-label">Mechanics & Staff</p>
+                    <p class="card-value">Awaiting API</p>
+                    <p class="card-description">
+                        Workshop staff information will load here.
+                    </p>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- Workshop Profile -->
+
+        <section class="dashboard-section" id="workshop-profile">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Workshop Profile</h2>
+                    <p class="section-description">
+                        Your workshop information and business details.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">API Integration Pending</span>
+                <h3>Workshop Information</h3>
+                <p>
+                    Workshop name, contact details, description and
+                    associated workshop information will be retrieved
+                    from the shared backend.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Bookings -->
+
+        <section class="dashboard-section" id="bookings">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Bookings</h2>
+                    <p class="section-description">
+                        Manage customer service appointments.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">API Integration Pending</span>
+                <h3>Booking Management</h3>
+                <p>
+                    Customer booking requests, booking details and
+                    appointment statuses will be displayed here
+                    after the required Workshop Owner APIs are available.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Services -->
+
+        <section class="dashboard-section" id="services">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Services</h2>
+                    <p class="section-description">
+                        Manage services offered by your workshop.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">API Integration Pending</span>
+                <h3>Workshop Services</h3>
+                <p>
+                    Service names, descriptions, prices and availability
+                    will be loaded from the shared backend.
+                    Service management will be connected when the
+                    required APIs are available.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Mechanics -->
+
+        <section class="dashboard-section" id="mechanics">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Mechanics & Staff</h2>
+                    <p class="section-description">
+                        Workshop team and staff information.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">API Integration Pending</span>
+                <h3>Staff Management</h3>
+                <p>
+                    Mechanic profiles, staff assignments and branch
+                    information will appear here after the required
+                    backend APIs are connected.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Notifications -->
+
+        <section class="dashboard-section" id="notifications">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Notifications</h2>
+                    <p class="section-description">
+                        Important workshop updates and alerts.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">API Integration Pending</span>
+                <h3>Workshop Notifications</h3>
+                <p>
+                    Booking updates, service notifications and other
+                    relevant workshop alerts will be displayed here
+                    when notification APIs are available.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Settings -->
+
+        <section class="dashboard-section" id="settings">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Settings</h2>
+                    <p class="section-description">
+                        Workshop owner account and portal settings.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="pending-label">Integration Pending</span>
+                <h3>Account Settings</h3>
+                <p>
+                    Account preferences and secure session management
+                    will be connected after the website authentication
+                    workflow is completed.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Dashboard Status -->
+
+        <section class="dashboard-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Dashboard Status</h2>
+                    <p class="section-description">
+                        Current development and integration status.
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="panel">
+                    <h3>Loading State</h3>
+                    <p>
+                        Loading indicators will be displayed while
+                        retrieving information from the backend.
+                    </p>
+                </div>
+
+                <div class="panel">
+                    <h3>Empty State</h3>
+                    <p>
+                        Helpful messages will appear when no records
+                        are available.
+                    </p>
+                </div>
+
+                <div class="panel">
+                    <h3>Error State</h3>
+                    <p>
+                        Backend or connection errors will be shown
+                        with appropriate feedback.
+                    </p>
+                </div>
+
+                <div class="panel">
+                    <h3>Data Source</h3>
+                    <p>
+                        Business information will come from the
+                        existing shared backend, not a separate
+                        website business database.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <footer class="footer">
+            Smart Auto Care &copy; 2026 | Workshop Owner Portal
+        </footer>
+
+    </main>
+
+</div>
+
 </body>
 </html>
