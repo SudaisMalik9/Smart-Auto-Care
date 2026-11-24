@@ -162,6 +162,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
-# Allow browser-based Flutter development to access Django.
-# This is enabled only when DEBUG=True.
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+# Allow Flutter Web development on localhost ports.
+# Restrict these origins to local development addresses.
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]
