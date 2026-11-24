@@ -7,6 +7,8 @@ from .views import (
     LogoutView,
     ProfileView,
     WebsitePairingGenerateView,
+    WebsitePairingScanView,
+    WebsitePairingApproveView,
     WebsitePairingExchangeView,
 )
 
@@ -26,4 +28,14 @@ urlpatterns = [
         WebsitePairingExchangeView.as_view(),
         name="website-pairing-exchange",
     ),
+path(
+    "website-pairing/scan/",
+    WebsitePairingScanView.as_view(),
+    name="website-pairing-scan",
+),
+path(
+    "website-pairing/approve/",
+    WebsitePairingApproveView.as_view(),
+    name="website-pairing-approve",
+),
 ]

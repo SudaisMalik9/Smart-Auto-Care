@@ -382,3 +382,278 @@ class WorkshopCRUDTests(APITestCase):
 
         other_workshop.refresh_from_db()
         self.assertEqual(other_workshop.name, "Private Workshop")
+
+from .models import (
+    WorkshopBranch,
+    BranchOperatingHours,
+    WorkshopDepartment,
+    WorkshopService,
+)
+
+
+class WorkshopManagementAPITests(APITestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username="management_owner",
+            email="management@example.com",
+            password="TestPass123!",
+            role="WORKSHOP_OWNER",
+        )
+
+        self.other_owner = User.objects.create_user(
+            username="other_management_owner",
+            email="other_management@example.com",
+            password="TestPass123!",
+            role="WORKSHOP_OWNER",
+        )
+
+        self.workshop = Workshop.objects.create(
+            owner=self.owner,
+            name="Management Workshop",
+        )
+
+        self.other_workshop = Workshop.objects.create(
+            owner=self.other_owner,
+            name="Other Management Workshop",
+        )
+
+        self.branch = WorkshopBranch.objects.create(
+            workshop=self.workshop,
+            name="Main Branch",
+            address="Main Road",
+            city="Lahore",
+            is_primary=True,
+        )
+
+        self.other_branch = WorkshopBranch.objects.create(
+            workshop=self.other_workshop,
+            name="Other Branch",
+            address="Other Road",
+            city="Karachi",
+            is_primary=True,
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+    def test_owner_can_create_branch(self):
+        response = self.client.post(
+            f"/api/workshops/{self.workshop.id}/branches/",
+            {
+                "name": "Second Branch",
+                "address": "Model Town",
+                "city": "Lahore",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        branch = WorkshopBranch.objects.get(
+            workshop=self.workshop,
+            name="Second Branch",
+        )
+
+        self.assertFalse(branch.is_primary)
+        self.assertTrue(branch.is_active)
+
+    def test_first_branch_is_automatically_primary(self):
+        new_workshop = Workshop.objects.create(
+            owner=self.owner,
+            name="New Workshop",
+        )
+
+        response = self.client.post(
+            f"/api/workshops/{new_workshop.id}/branches/",
+            {
+                "name": "First Branch",
+                "address": "Canal Road",
+                "city": "Lahore",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        branch = WorkshopBranch.objects.get(
+            workshop=new_workshop
+        )
+
+        self.assertTrue(branch.is_primary)
+
+    def test_owner_cannot_access_another_owners_branches(self):
+        response = self.client.get(
+            f"/api/workshops/{self.other_workshop.id}/branches/"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_owner_can_create_operating_hours(self):
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/operating-hours/",
+            {
+                "weekday": 0,
+                "is_closed": False,
+                "opening_time": "09:00:00",
+                "closing_time": "18:00:00",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        hours = BranchOperatingHours.objects.get(
+            branch=self.branch,
+            weekday=0,
+        )
+
+        self.assertFalse(hours.is_closed)
+
+    def test_duplicate_operating_hours_are_rejected(self):
+        BranchOperatingHours.objects.create(
+            branch=self.branch,
+            weekday=0,
+            is_closed=False,
+            opening_time="09:00",
+            closing_time="18:00",
+        )
+
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/operating-hours/",
+            {
+                "weekday": 0,
+                "is_closed": False,
+                "opening_time": "10:00:00",
+                "closing_time": "19:00:00",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_closed_day_does_not_keep_opening_times(self):
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/operating-hours/",
+            {
+                "weekday": 6,
+                "is_closed": True,
+                "opening_time": "09:00:00",
+                "closing_time": "18:00:00",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        hours = BranchOperatingHours.objects.get(
+            branch=self.branch,
+            weekday=6,
+        )
+
+        self.assertTrue(hours.is_closed)
+        self.assertIsNone(hours.opening_time)
+        self.assertIsNone(hours.closing_time)
+
+    def test_owner_can_create_department(self):
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/departments/",
+            {
+                "name": "Mechanical",
+                "description": "Engine and mechanical repairs.",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        department = WorkshopDepartment.objects.get(
+            branch=self.branch,
+            name="Mechanical",
+        )
+
+        self.assertTrue(department.is_active)
+
+    def test_owner_can_create_service(self):
+        department = WorkshopDepartment.objects.create(
+            branch=self.branch,
+            name="Mechanical",
+        )
+
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/services/",
+            {
+                "department": department.id,
+                "name": "Engine Oil Change",
+                "description": "Engine oil replacement.",
+                "price": "2500.00",
+                "estimated_duration_minutes": 45,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        service = WorkshopService.objects.get(
+            branch=self.branch,
+            name="Engine Oil Change",
+        )
+
+        self.assertEqual(service.department, department)
+        self.assertEqual(service.price, 2500)
+        self.assertEqual(service.estimated_duration_minutes, 45)
+
+    def test_service_cannot_use_department_from_another_branch(self):
+        other_department = WorkshopDepartment.objects.create(
+            branch=self.other_branch,
+            name="Electrical",
+        )
+
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/services/",
+            {
+                "department": other_department.id,
+                "name": "Electrical Repair",
+                "description": "Electrical system repair.",
+                "price": "1500.00",
+                "estimated_duration_minutes": 30,
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_negative_service_price_is_rejected(self):
+        response = self.client.post(
+            f"/api/workshops/branches/{self.branch.id}/services/",
+            {
+                "name": "Invalid Service",
+                "description": "Invalid price test.",
+                "price": "-100.00",
+                "estimated_duration_minutes": 30,
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_owner_cannot_access_another_owners_services(self):
+        response = self.client.get(
+            f"/api/workshops/branches/{self.other_branch.id}/services/"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
