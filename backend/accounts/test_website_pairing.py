@@ -59,6 +59,7 @@ class WebsitePairingTests(APITestCase):
         pairing = WebsitePairingCode.objects.create(
             user=self.owner,
             code_hash=hashlib.sha256(raw_code.encode()).hexdigest(),
+            approved_at=timezone.now(),
         )
 
         response = self.client.post(
@@ -80,6 +81,7 @@ class WebsitePairingTests(APITestCase):
         WebsitePairingCode.objects.create(
             user=self.owner,
             code_hash=hashlib.sha256(raw_code.encode()).hexdigest(),
+            approved_at=timezone.now(),
         )
 
         first_response = self.client.post(

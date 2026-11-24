@@ -72,13 +72,14 @@ class ProfileView(generics.RetrieveAPIView):
 
 
 class WebsitePairingGenerateView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsWorkshopOwner]
 
     def post(self, request):
         raw_code = secrets.token_urlsafe(32)
         code_hash = hashlib.sha256(raw_code.encode()).hexdigest()
 
         pairing = WebsitePairingCode.objects.create(
+            user=request.user,
             code_hash=code_hash,
         )
 
@@ -242,6 +243,7 @@ class WebsitePairingApproveView(APIView):
         })
 
 
+
 class WebsitePairingExchangeView(APIView):
     permission_classes = [AllowAny]
 
@@ -261,7 +263,7 @@ class WebsitePairingExchangeView(APIView):
         with transaction.atomic():
             pairing = (
                 WebsitePairingCode.objects
-                .select_for_update()
+                .select_for_update(of=("self",))
                 .select_related("user")
                 .filter(code_hash=code_hash)
                 .first()
