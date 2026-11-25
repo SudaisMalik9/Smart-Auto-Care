@@ -101,15 +101,3 @@ class WebsitePairingCode(models.Model):
 
     def __str__(self):
         return f"Website pairing for {self.user or 'Pending'}"
-
-    class Meta:
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(
-                fields=["expires_at", "used_at"],
-                name="website_pairing_exp_idx",
-            ),
-        ]
-
-    def __str__(self):
-        return f"Website pairing for {self.user.username}"
