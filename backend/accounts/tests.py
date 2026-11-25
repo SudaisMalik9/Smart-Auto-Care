@@ -82,6 +82,18 @@ class AuthenticationAPITests(APITestCase):
             format="json",
         )
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("token", response.data)
+        self.assertTrue(response.data["token"])
+        self.assertEqual(
+            response.data["user"]["username"],
+            "testcustomer",
+        )
+        self.assertEqual(
+            response.data["user"]["role"],
+            User.Role.CUSTOMER,
+        )
+
     def test_login_with_email_returns_token(self):
         response = self.client.post(
             self.login_url,
