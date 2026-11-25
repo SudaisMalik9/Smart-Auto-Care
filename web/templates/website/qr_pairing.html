@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Workshop Owner Login | Smart Auto Care</title>
 
     <style>
@@ -115,8 +114,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 12px;
             margin-bottom: 23px;
+        }
+
+        .qr-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .qr-placeholder {
@@ -148,6 +153,27 @@
         .connection-status p {
             font-size: 13px;
             line-height: 1.5;
+        }
+
+        .retry-button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .retry-button:hover {
+            background: #1d4ed8;
+        }
+
+        .retry-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .security-note {
@@ -191,7 +217,6 @@
     <main class="login-container">
 
         <section class="login-info">
-
             <div class="brand">Smart Auto Care</div>
 
             <h1>Workshop Owner Login</h1>
@@ -202,7 +227,6 @@
             </p>
 
             <ol class="steps">
-
                 <li>
                     <span class="step-number">1</span>
                     <span>Open your Smart Auto Care mobile application.</span>
@@ -227,9 +251,7 @@
                     <span class="step-number">5</span>
                     <span>After approval, your Workshop Dashboard will open automatically.</span>
                 </li>
-
             </ol>
-
         </section>
 
         <section class="login-panel">
@@ -241,11 +263,14 @@
                 to approve this login request.
             </p>
 
+            <form id="csrf-form" hidden>
+                {% csrf_token %}
+            </form>
+
             <div id="qr-display" class="qr-display">
                 <div class="qr-placeholder">
                     <span>▦</span>
-                    QR code will appear here
-                    after secure login setup.
+                    Preparing secure QR code...
                 </div>
             </div>
 
@@ -255,21 +280,28 @@
                 role="status"
                 aria-live="polite"
             >
-                <h3>Waiting for Login Setup</h3>
-                <p>
-                    A secure QR login request will be generated
-                    when the backend integration is connected.
-                </p>
+                <h3>Connecting</h3>
+                <p>Generating your secure login request.</p>
             </div>
 
+            <button
+                type="button"
+                id="retry-button"
+                class="retry-button"
+            >
+                Generate New QR Code
+            </button>
+
             <p class="security-note">
-                Secure login requires approval from your
-                authenticated Workshop Owner mobile account.
+                QR login expires after 5 minutes and requires
+                approval from your authenticated Workshop Owner account.
             </p>
 
         </section>
 
     </main>
+
+    <script src="{% static 'js/qr-pairing.js' %}" defer></script>
 
 </body>
 </html>

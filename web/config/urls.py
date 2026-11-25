@@ -13,4 +13,21 @@ urlpatterns = [
     path("workshop-pairing/", views.qr_pairing, name="qr_pairing"),
 
     path("admin-login/", views.admin_login, name="admin_login"),
+
+    path(
+        "website-api/pairing/generate/",
+        views.pairing_generate,
+        name="pairing_generate",
+    ),
+
+    path(
+        "website-api/pairing/exchange/",
+        views.pairing_exchange,
+        name="pairing_exchange",
+    ),
+    path(
+        "workshop-logout/",
+        views.website_logout,
+        name="website_logout",
+    ),
 ]

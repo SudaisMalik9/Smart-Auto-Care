@@ -392,7 +392,24 @@
                 <p>Manage your workshop activities in one place.</p>
             </div>
 
-            <span class="preview-badge">Development Preview</span>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <span class="preview-badge">Development Preview</span>
+
+    <form method="POST" action="{% url 'website_logout' %}">
+        {% csrf_token %}
+        <button type="submit" style="
+            background: #1565C0;
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        ">
+            Logout
+        </button>
+    </form>
+</div>
         </header>
 
         <!-- Welcome -->
