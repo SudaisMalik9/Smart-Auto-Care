@@ -68,18 +68,18 @@ class ProfileView(generics.RetrieveAPIView):
         return self.request.user
 
 
-
-
-
 class WebsitePairingGenerateView(APIView):
-    permission_classes = [IsWorkshopOwner]
+    # Website is logged out when generating a QR code.
+    permission_classes = [AllowAny]
 
     def post(self, request):
         raw_code = secrets.token_urlsafe(32)
         code_hash = hashlib.sha256(raw_code.encode()).hexdigest()
 
+        # Pairing starts without an assigned user.
+        # The authenticated Flutter user is assigned during scanning.
         pairing = WebsitePairingCode.objects.create(
-            user=request.user,
+            user=None,
             code_hash=code_hash,
         )
 
@@ -142,6 +142,7 @@ class WebsitePairingScanView(APIView):
                     status=status.HTTP_409_CONFLICT,
                 )
 
+            # Assign the authenticated Workshop Owner at scan time.
             pairing.user = request.user
 
             if pairing.scanned_at is None:
@@ -243,7 +244,6 @@ class WebsitePairingApproveView(APIView):
         })
 
 
-
 class WebsitePairingExchangeView(APIView):
     permission_classes = [AllowAny]
 
@@ -314,6 +314,7 @@ class WebsitePairingExchangeView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            # Mark the pairing as used before returning the token.
             pairing.used_at = timezone.now()
             pairing.save(update_fields=["used_at"])
 

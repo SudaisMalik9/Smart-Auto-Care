@@ -1,4 +1,3 @@
-
 import hashlib
 from datetime import timedelta
 
@@ -26,6 +25,24 @@ class WebsitePairingTests(APITestCase):
             role="CUSTOMER",
         )
 
+    def test_logged_out_user_can_generate_pairing_code(self):
+        # Website must be able to generate QR code without login.
+        response = self.client.post(
+            "/api/auth/website-pairing/generate/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        raw_code = response.data["code"]
+        code_hash = hashlib.sha256(raw_code.encode()).hexdigest()
+
+        pairing = WebsitePairingCode.objects.get(code_hash=code_hash)
+
+        # Owner is assigned later when Flutter scans the QR code.
+        self.assertIsNone(pairing.user)
+        self.assertIsNone(pairing.used_at)
+        self.assertNotEqual(pairing.code_hash, raw_code)
+
     def test_workshop_owner_can_generate_pairing_code(self):
         self.client.force_authenticate(user=self.owner)
 
@@ -40,18 +57,9 @@ class WebsitePairingTests(APITestCase):
 
         pairing = WebsitePairingCode.objects.get(code_hash=code_hash)
 
-        self.assertEqual(pairing.user, self.owner)
+        self.assertIsNone(pairing.user)
         self.assertIsNone(pairing.used_at)
         self.assertNotEqual(pairing.code_hash, raw_code)
-
-    def test_customer_cannot_generate_pairing_code(self):
-        self.client.force_authenticate(user=self.customer)
-
-        response = self.client.post(
-            "/api/auth/website-pairing/generate/"
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_valid_code_can_be_exchanged(self):
         raw_code = "test-one-time-pairing-code"
