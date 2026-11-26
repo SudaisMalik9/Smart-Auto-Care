@@ -1,65 +1,307 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workshop Device Pairing | Smart Auto Care</title>
+    <title>Workshop Owner Login | Smart Auto Care</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f3f6fb;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 950px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 35px #14213d12;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .login-info {
+            background: #14213d;
+            color: white;
+            padding: 45px 35px;
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: bold;
+            margin-bottom: 55px;
+        }
+
+        .login-info h1 {
+            font-size: 30px;
+            line-height: 1.3;
+            margin-bottom: 18px;
+        }
+
+        .login-info > p {
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin-bottom: 35px;
+        }
+
+        .steps {
+            list-style: none;
+        }
+
+        .steps li {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            margin-bottom: 23px;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+
+        .step-number {
+            min-width: 29px;
+            height: 29px;
+            border-radius: 50%;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .login-panel {
+            padding: 45px 35px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .login-panel h2 {
+            font-size: 25px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .qr-display {
+            width: 230px;
+            height: 230px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            margin-bottom: 23px;
+        }
+
+        .qr-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qr-placeholder {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .qr-placeholder span {
+            display: block;
+            font-size: 38px;
+            margin-bottom: 12px;
+        }
+
+        .connection-status {
+            width: 100%;
+            padding: 15px;
+            background: #eff6ff;
+            border-radius: 10px;
+            color: #1d4ed8;
+            margin-bottom: 20px;
+        }
+
+        .connection-status h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .connection-status p {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .retry-button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .retry-button:hover {
+            background: #1d4ed8;
+        }
+
+        .retry-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .security-note {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .login-container {
+                grid-template-columns: 1fr;
+            }
+
+            .login-info,
+            .login-panel {
+                padding: 30px 24px;
+            }
+
+            .brand {
+                margin-bottom: 30px;
+            }
+
+            .login-info h1 {
+                font-size: 25px;
+            }
+
+            .qr-display {
+                width: 210px;
+                height: 210px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-    <main>
-        <h1>Connect Your Workshop</h1>
+    <main class="login-container">
 
-        <p>
-            Connect your Smart Auto Care mobile app
-            with your Workshop Manager dashboard.
-        </p>
+        <section class="login-info">
+            <div class="brand">Smart Auto Care</div>
 
-        <section>
-            <h2>How to Connect</h2>
+            <h1>Workshop Owner Login</h1>
 
-            <ol>
-                <li>Open the Smart Auto Care mobile application.</li>
-                <li>Login using your Workshop Manager account.</li>
-                <li>Open the QR Pairing option in the mobile app.</li>
-                <li>Scan the QR code displayed on this website.</li>
-                <li>Wait for backend verification.</li>
+            <p>
+                Securely access your Workshop Dashboard using
+                your Smart Auto Care mobile application.
+            </p>
+
+            <ol class="steps">
+                <li>
+                    <span class="step-number">1</span>
+                    <span>Open your Smart Auto Care mobile application.</span>
+                </li>
+
+                <li>
+                    <span class="step-number">2</span>
+                    <span>Login using your Workshop Owner account.</span>
+                </li>
+
+                <li>
+                    <span class="step-number">3</span>
+                    <span>Open the QR Scanner and scan the website QR code.</span>
+                </li>
+
+                <li>
+                    <span class="step-number">4</span>
+                    <span>Review the login request and select Approve or Reject.</span>
+                </li>
+
+                <li>
+                    <span class="step-number">5</span>
+                    <span>After approval, your Workshop Dashboard will open automatically.</span>
+                </li>
             </ol>
         </section>
 
-        <section>
-            <h2>Connection Status</h2>
+        <section class="login-panel">
 
-            <div id="connection-status">
-                <h3>Waiting for QR Scan</h3>
-                <p>Waiting for pairing to begin.</p>
-            </div>
+            <h2>Scan to Login</h2>
 
-            <div id="qr-display">
-                <p>QR code will appear when the pairing API is available.</p>
-            </div>
-
-            <p>
-                Development Mode: These interface states are samples only.
-                No actual authentication or device pairing is performed.
+            <p class="subtitle">
+                Use your registered Workshop Owner mobile app
+                to approve this login request.
             </p>
-        </section>
 
-        <section>
-            <h2>Development-Only Sample States</h2>
+            <form id="csrf-form" hidden>
+                {% csrf_token %}
+            </form>
 
-            <button type="button" data-state="waiting">Waiting</button>
-            <button type="button" data-state="qr">QR Displayed</button>
-            <button type="button" data-state="connecting">Connecting</button>
-            <button type="button" data-state="connected">Connected</button>
-            <button type="button" data-state="expired">QR Expired</button>
-            <button type="button" data-state="failed">Connection Failed</button>
+            <div id="qr-display" class="qr-display">
+                <div class="qr-placeholder">
+                    <span>▦</span>
+                    Preparing secure QR code...
+                </div>
+            </div>
 
-            <button type="button" id="retry-button">Retry</button>
+            <div
+                id="connection-status"
+                class="connection-status"
+                role="status"
+                aria-live="polite"
+            >
+                <h3>Connecting</h3>
+                <p>Generating your secure login request.</p>
+            </div>
+
+            <button
+                type="button"
+                id="retry-button"
+                class="retry-button"
+            >
+                Generate New QR Code
+            </button>
+
+            <p class="security-note">
+                QR login expires after 5 minutes and requires
+                approval from your authenticated Workshop Owner account.
+            </p>
+
         </section>
 
     </main>
-<script src="{% static 'js/qr-pairing.js' %}"></script>
+
+    <script src="{% static 'js/qr-pairing.js' %}" defer></script>
+
 </body>
 </html>
